@@ -2,7 +2,13 @@
 
 [繁體中文](README.md) · English
 
-Use your iPad as a Retina second display for your Mac over a single USB-C data cable. The Mac menu bar app manages the connection, display, audio, and input. The same iPad receiver plays Mac audio and can control your Mac with touch, a keyboard, or a trackpad once you grant input access.
+**Turn your iPad into a wired extended display for your Mac. A single USB-C data cable carries the desktop and audio.**
+
+- **Mac audio through your iPad.** Streams uncompressed 48 kHz stereo PCM over USB. Listen through the iPad speakers or your selected headphones, and adjust volume in macOS.
+- **Native Retina resolution and up to 120 FPS.** Adapts to the iPad’s display and negotiates high refresh rates on ProMotion models. A 60 Hz compatibility mode is available.
+- **HDR10 support.** Requires macOS 26 or later with compatible capture and encoding, plus an HDR-capable iPad. The stream falls back to SDR when HDR is unavailable.
+
+With input access enabled, you can also control the Mac with the iPad’s touchscreen, keyboard, or trackpad.
 
 ## Downloads
 

@@ -2,7 +2,13 @@
 
 繁體中文 · [English](README.en.md)
 
-用一條 USB-C 資料線把 iPad 當成 Mac 的 Retina 副螢幕。Mac 選單列面板管理連線、畫面、聲音和輸入。同一個 iPad 接收器可接收畫面及 Mac 聲音，也可在取得權限後用觸控、鍵盤或觸控板操作 Mac。
+**用一條 USB-C 資料線，把 iPad 變成 Mac 的有線延伸螢幕，畫面和聲音一起傳。**
+
+- **Mac 音效從 iPad 播放**。透過 USB 傳送 48 kHz 雙聲道無壓縮 PCM，從 iPad 喇叭或所選的耳機播放，音量可在 macOS 調整。
+- **Retina 原生解析度、最高 120 FPS 串流**。依 iPad 面板自動調整解析度與更新率，ProMotion 機型可協商高刷，也可選用 60 Hz 相容模式。
+- **支援 HDR10**。需要 macOS 26 以上、相容的 Mac 擷取與編碼，以及支援 HDR 的 iPad。HDR 條件不足時會自動使用 SDR。
+
+授權輸入後，也能用 iPad 的觸控、鍵盤或觸控板操作 Mac。
 
 ## 下載
 
