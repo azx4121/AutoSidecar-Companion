@@ -11,6 +11,10 @@
 
 目前提供可自行建置的開發預覽。使用下方步驟在 Mac 建置安裝包，並用 Xcode 將接收器裝到 iPad。公證 Mac 安裝包、App Store 與 TestFlight 發行仍待完成。
 
+![MacBook 和 iPad 透過一條 USB-C 線相連，兩台裝置顯示各自的桌面](docs/images/usb-c-desk.webp)
+
+*單線延伸桌面示意圖。*
+
 ## 系統需求
 
 - **Mac** 需要 macOS 14 以上。畫面的 HDR10 路徑需要 macOS 26 以上、相容的 Mac 擷取與編碼，以及支援 HDR10 的 iPad 接收端。
@@ -41,6 +45,15 @@ Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可�
 - 主機依 iPad 接收器讀到的面板像素、縮放和更新率協商。高更新率的協商上限是 120 FPS。接收器會等待面板資訊就緒。iPad 回報較低上限、開啟低耗電模式或手選 60 Hz 相容模式時，按對應上限協商。若高刷或 HDR 路徑啟動失敗，主機分階段重試，必要時保留解析度並回到 60 Hz SDR。
 - USB 為預設路徑。音訊串流使用 48 kHz 雙聲道 PCM，實際播出取樣率與聲道依 iPad 的輸出裝置。拔線時會嘗試釋放虛擬顯示器並還原由本程式切換的 Mac 音訊輸出。
 - **Wi-Fi 為開發測試路徑**。先經 USB 配對，兩端使用同一個區域網路。iPad 可在接收器選「使用 Wi-Fi 連線」，並依系統提示啟用區域網路權限。Mac 端先結束原本的 USB 主機，再以 `open -a "AutoSidecar Companion" --args --lan-interface en0` 啟動 LAN 主機。將 `en0` 換成本機連上該區網的介面名稱。iPad 可用 Bonjour 探索，或使用有線會話記住的區網位址再驗證配對金鑰。完全拔線後的自動重連、控制及長時間音訊仍待本版實機驗收。
+
+## Mac 介面預覽
+
+<p align="center">
+  <img src="docs/images/mac-display-panel.webp" width="302" alt="Mac 顯示面板，含 Retina 桌面空間、畫質與更新率設定">
+  <img src="docs/images/mac-audio-panel.webp" width="302" alt="Mac 音訊面板，含 iPad Speaker 與耳機切換設定">
+</p>
+
+*Mac 選單列的顯示與音訊設定。畫面由程式以範例資料產生。*
 
 ## 驗證範圍
 

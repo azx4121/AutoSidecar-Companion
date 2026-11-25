@@ -11,6 +11,10 @@ Use your iPad as a Retina second display for your Mac over a single USB-C data c
 
 This developer preview is available as source. Follow the steps below to build the Mac installer and run the iPad receiver from Xcode. A notarized Mac installer, an App Store release, and TestFlight distribution are still pending.
 
+![A MacBook and iPad connected by one USB-C cable, each showing its own desktop](docs/images/usb-c-desk.webp)
+
+*Illustration of a single-cable extended desktop.*
+
 ## Requirements
 
 - **Mac** with macOS 14 or later. HDR10 requires macOS 26 or later, compatible capture and encoding on the Mac, and an HDR10-capable iPad receiver.
@@ -41,6 +45,15 @@ The Mac build includes both Apple silicon and Intel binaries by default. Pass `-
 - The host negotiates resolution, scale, and refresh rate based on the iPad’s built-in display. It waits for the receiver to report display information and negotiates up to 120 FPS. The reported display limit, Low Power Mode, or the optional 60 Hz compatibility setting can lower the ceiling. If high refresh or HDR fails to start, the host retries in stages and can fall back to 60 Hz SDR at the same resolution.
 - USB is the default. Audio uses 48 kHz stereo PCM. The iPad’s selected output determines the playback sample rate and channel count. On disconnect, Companion attempts to release the virtual display and restore any Mac audio output it changed.
 - **Wi-Fi is experimental.** Pair over USB and put both devices on the same local network. Enable Wi-Fi in the iPad receiver and grant Local Network access if prompted. Quit the USB host on the Mac and start the LAN host with `open -a "AutoSidecar Companion" --args --lan-interface en0`. Replace `en0` with the interface connected to that network. The iPad can discover the host through Bonjour or use the network address remembered from a USB session, then verify the paired key. Automatic reconnection without USB, input, and sustained audio still need testing on physical devices.
+
+## Mac interface preview
+
+<p align="center">
+  <img src="docs/images/mac-display-panel.webp" width="302" alt="Mac display panel with Retina workspace, quality, and refresh rate settings">
+  <img src="docs/images/mac-audio-panel.webp" width="302" alt="Mac audio panel with iPad Speaker and headphone switching settings">
+</p>
+
+*Display and audio settings in the Mac menu bar, rendered by the app with sample data.*
 
 ## Verification
 
