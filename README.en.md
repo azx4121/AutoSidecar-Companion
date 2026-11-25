@@ -65,6 +65,18 @@ The Mac build includes both Apple silicon and Intel binaries by default. Pass `-
 4. **Permissions.** In **System Settings → Privacy & Security** on the Mac, allow screen recording. To hear Mac audio on the iPad, grant microphone access to the Mac app so it can read the virtual audio device. To test iPad input, enable input in the Mac app and grant Accessibility access. Reopen the app if macOS asks. The iPad microphone starts disabled. [Screen recording access](https://support.apple.com/guide/mac-help/mchld6aa7d23/mac) · [Microphone access](https://support.apple.com/guide/mac-help/mchla1b1e1fe/mac)
 5. **Daily use.** While signed in to macOS, open the iPad receiver and plug in the cable. Paired devices will try to reconnect. Turn on **Mac audio on this iPad** in the receiver and adjust the **iPad Speaker** volume in the Mac’s Sound settings. Pairing and streaming start after a macOS user signs in.
 
+## Free signing and USB renewal
+
+The iPad receiver's provisioning profile lasts **seven days** when installed with Xcode's free Personal Team. Finish the first installation and pairing in Xcode, then connect and unlock the iPad and open `續簽 iPad 接收器.command` in the repository on the Mac to check or renew manually. [Apple developer accounts](https://developer.apple.com/help/account/basics/about-your-developer-account)
+
+To have the Mac check automatically on each USB connection, run this once:
+
+```sh
+/usr/bin/python3 scripts/renew-receiver.py --enable-auto --launch-url autosidecar-companion://usb
+```
+
+Keep the source folder in place and stay signed in to Xcode. After Mac login, the agent waits for a fresh USB connection and an unlocked iPad. It asks Xcode for a signed build when less than 24 hours remain or when it has no expiry on record. It updates the existing app using the same team and bundle identifier to preserve app data and pairing. If Apple returns the same expiry, the current app stays installed and the next USB connection checks again. Run `/usr/bin/python3 scripts/renew-receiver.py --disable-auto` to turn off automatic renewal.
+
 ## Display, audio, and connection
 
 - The host negotiates resolution, scale, and refresh rate based on the iPad’s built-in display. It waits for the receiver to report display information and negotiates up to 120 FPS. The reported display limit, Low Power Mode, or the optional 60 Hz compatibility setting can lower the ceiling. If high refresh or HDR fails to start, the host retries in stages and can fall back to 60 Hz SDR at the same resolution.

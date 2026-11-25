@@ -65,6 +65,18 @@ Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可�
 4. **提供所需權限**。在 Mac 的「系統設定 → 隱私權與安全性」允許螢幕錄製。要在 iPad 播放 Mac 聲音時，也要允許 Mac App 使用「麥克風」權限讀取虛擬音訊裝置。若要測試 iPad 輸入功能，請勾選允許輸入並核准「輔助使用」。依系統提示重新開啟 App。iPad 麥克風預設關閉。[Apple 螢幕錄製](https://support.apple.com/zh-tw/guide/mac-help/mchld6aa7d23/mac) · [Apple 麥克風權限](https://support.apple.com/zh-tw/guide/mac-help/mchla1b1e1fe/mac)
 5. **日常使用**。在 Mac 登入後，維持 iPad 接收器在前景再插線，已配對的裝置會嘗試重連。若 iPad 的接收器已關閉，先解鎖並開啟 App。要播放 Mac 聲音，在接收器啟用「在這部 iPad 播放 Mac 音訊」，並從 Mac 的「聲音」設定調整「iPad Speaker」音量。配對和串流從 macOS 使用者登入後開始。
 
+## 免費簽署與 USB 自動續簽
+
+使用 Xcode 免費 Personal Team 安裝的 **iPad 接收器簽署有效 7 天**。首次用 Xcode 安裝並配對後，接上並解鎖 iPad，在 Mac 雙擊專案根目錄的「續簽 iPad 接收器.command」即可手動檢查與續簽。[Apple 開發者帳號說明](https://developer.apple.com/help/account/basics/about-your-developer-account)
+
+要在每次插線時自動處理，可在 Mac 執行一次：
+
+```sh
+/usr/bin/python3 scripts/renew-receiver.py --enable-auto --launch-url autosidecar-companion://usb
+```
+
+保持原始碼資料夾在原位，並讓 Xcode 維持登入。Mac 登入後會偵測下一次 USB 插線、等候 iPad 解鎖，並在已知簽署剩不到 24 小時或尚無期限紀錄時詢問 Xcode。取得新簽署後會以同一個團隊和 App 識別碼覆蓋安裝，保留 App 資料和配對。若 Apple 仍回傳原期限，工具會先保留既有安裝，下次插線再檢查。用 `/usr/bin/python3 scripts/renew-receiver.py --disable-auto` 可停用。
+
 ## 畫面、聲音與連線
 
 - 主機依 iPad 接收器讀到的面板像素、縮放和更新率協商。高更新率的協商上限是 120 FPS。接收器會等待面板資訊就緒。iPad 回報較低上限、開啟低耗電模式或手選 60 Hz 相容模式時，按對應上限協商。若高刷或 HDR 路徑啟動失敗，主機分階段重試，必要時保留解析度並回到 60 Hz SDR。
