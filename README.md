@@ -7,7 +7,7 @@
 ## 下載
 
 - [下載 v0.2.0 原始碼 ZIP](https://github.com/azx4121/AutoSidecar-Companion/archive/8bdf8d1063cd8b1ec34bcd69a8e3753b06159ebf.zip)
-- [下載最新原始碼 ZIP（含雙語說明）](https://github.com/azx4121/AutoSidecar-Companion/archive/refs/heads/main.zip)
+- [下載含雙語 README 的原始碼 ZIP](https://github.com/azx4121/AutoSidecar-Companion/archive/9aa789c5fe3392a032bfb4ec87184a4c8bd8ccd5.zip)
 
 目前提供可自行建置的開發預覽。使用下方步驟在 Mac 建置安裝包，並用 Xcode 將接收器裝到 iPad。公證 Mac 安裝包、App Store 與 TestFlight 發行仍待完成。
 

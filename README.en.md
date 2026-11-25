@@ -7,7 +7,7 @@ Use your iPad as a Retina second display for your Mac over a single USB-C data c
 ## Downloads
 
 - [Download the v0.2.0 source ZIP](https://github.com/azx4121/AutoSidecar-Companion/archive/8bdf8d1063cd8b1ec34bcd69a8e3753b06159ebf.zip)
-- [Download the latest source ZIP with both READMEs](https://github.com/azx4121/AutoSidecar-Companion/archive/refs/heads/main.zip)
+- [Download the source ZIP with both READMEs](https://github.com/azx4121/AutoSidecar-Companion/archive/9aa789c5fe3392a032bfb4ec87184a4c8bd8ccd5.zip)
 
 This developer preview is available as source. Follow the steps below to build the Mac installer and run the iPad receiver from Xcode. A notarized Mac installer, an App Store release, and TestFlight distribution are still pending.
 
