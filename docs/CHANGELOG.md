@@ -9,6 +9,7 @@
 - iPad 音訊輸出可因應裝置切換，在單聲道輸出保留左右聲道內容。
 - Mac App、Mac 選單列和 iPad 接收器採用 Companion 的雙螢幕圖示。
 - Mac 發行模式整合 Developer ID 簽署、公證及接收器下載 QR 碼。開發預覽可用 Xcode 直接安裝 iPad 接收器。
+- iPad 接收器的發行建置可匯出 App Store Connect IPA，Xcode 專案會在 App 中附上 GPL 授權。
 
 GitHub 原始碼版修正 Mac 通用套件的雙架構檢查，並讓 iPad 模擬器編譯時略過裝置專用的 Metal 呈現量測。
 

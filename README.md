@@ -97,7 +97,13 @@ xcrun swiftc -swift-version 6 macOSHost/Host/MacBookLayout.swift CompanionTests/
 
 ## 簽署與授權
 
-維護者備妥 iPad 公開安裝連結後，可用以下指令建立發行包。發行建置依序簽署、提交 Apple 公證、加上公證票證並驗證安裝包。
+維護者使用已加入 Apple Developer Program 的團隊，在 Xcode 登入後設定 `RECEIVER_TEAM_ID`。以下指令會封存接收器，並匯出可上傳 App Store Connect 的已簽署 IPA。
+
+```sh
+bash build-receiver.sh --release dist
+```
+
+將 `dist/AutoSidecar-iPad-AppStoreConnect.ipa` 上傳 App Store Connect，完成所選通路的送審與發行。取得 iPad 公開安裝連結後，用下列指令建立 Mac 發行包。建置會提交 Apple 公證、加上公證票證並驗證安裝包。
 
 ```sh
 python3 build-mac.py --release dist/AutoSidecar-Companion.pkg

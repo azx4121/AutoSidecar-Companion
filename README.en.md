@@ -97,7 +97,13 @@ xcrun swiftc -swift-version 6 macOSHost/Host/MacBookLayout.swift CompanionTests/
 
 ## Signing and license
 
-Once the iPad receiver has a public installation URL, maintainers can build the release package with the command below. It signs the app and installer, submits the package for Apple notarization, staples the ticket, and verifies the installer.
+Maintainers sign in to Xcode using an Apple Developer Program team and set `RECEIVER_TEAM_ID`. This command archives the receiver and exports a signed IPA for App Store Connect.
+
+```sh
+bash build-receiver.sh --release dist
+```
+
+Upload `dist/AutoSidecar-iPad-AppStoreConnect.ipa` to App Store Connect for review and distribution. Once the receiver has a public installation URL, build the Mac release package with the command below. It signs the app and installer, submits the package for Apple notarization, staples the ticket, and verifies the installer.
 
 ```sh
 python3 build-mac.py --release dist/AutoSidecar-Companion.pkg
