@@ -20,6 +20,20 @@
 
 *單線延伸桌面示意圖。*
 
+## iPad 右上角切換高刷與一般模式（Mac mini 原型）
+
+- **從高刷切到一般模式**。在 iPad 右上角點「Sidecar 觸控」，切到原生有線並行（Sidecar）的 60 Hz 相容模式。
+- **從一般切回高刷模式**。在 iPad 右上角點「高刷模式」，回到 USB Retina 高刷桌面。
+
+<p align="center">
+  <img src="docs/images/ipad-in-high-refresh.webp" width="350" alt="高刷桌面右上角的 Sidecar 觸控按鈕，點一下切到一般模式">
+  <img src="docs/images/ipad-in-standard-mode.webp" width="350" alt="一般 Sidecar 桌面右上角的高刷模式按鈕，點一下切回 USB 高刷">
+</p>
+
+*範例桌面重現 Mac mini 原型的兩個按鈕與位置。*
+
+**公開版 Companion** 從 Mac 選單列的 **Display → Match the iPad’s refresh rate** 調整。開啟時依 iPad 協商更新率，關閉時把 Companion 串流上限設為 60 Hz。
+
 ## 系統需求
 
 - **Mac** 需要 macOS 14 以上。畫面的 HDR10 路徑需要 macOS 26 以上、相容的 Mac 擷取與編碼，以及支援 HDR10 的 iPad 接收端。

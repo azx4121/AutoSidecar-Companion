@@ -20,6 +20,20 @@ This developer preview is available as source. Follow the steps below to build t
 
 *Illustration of a single-cable extended desktop.*
 
+## Switch between high refresh and standard mode on the iPad (Mac mini prototype)
+
+- **From high refresh to standard mode.** Tap **Sidecar 觸控** (Sidecar Touch) in the upper-right corner of the iPad to switch to the native wired Sidecar mode at 60 Hz.
+- **From standard mode back to high refresh.** Tap **高刷模式** (High Refresh) in the upper-right corner to return to the high-refresh Retina desktop over USB.
+
+<p align="center">
+  <img src="docs/images/ipad-in-high-refresh.webp" width="350" alt="Sidecar Touch button in the upper-right corner of the high-refresh desktop">
+  <img src="docs/images/ipad-in-standard-mode.webp" width="350" alt="High Refresh button in the upper-right corner of the standard Sidecar desktop">
+</p>
+
+*Sample desktops illustrate the button labels and positions in the Mac mini prototype.*
+
+**In the public Companion build**, use **Display → Match the iPad’s refresh rate** in the Mac menu bar. Switch it on to negotiate the refresh rate with the iPad, or off to cap the Companion stream at 60 Hz.
+
 ## Requirements
 
 - **Mac** with macOS 14 or later. HDR10 requires macOS 26 or later, compatible capture and encoding on the Mac, and an HDR10-capable iPad receiver.
