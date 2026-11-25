@@ -14,7 +14,9 @@
 
 [Download AutoSidecar Companion source (ZIP)](https://github.com/azx4121/AutoSidecar-Companion/archive/main.zip)
 
-This developer preview is available as source. Follow the steps below to build the Mac installer and run the iPad receiver from Xcode. A notarized Mac installer, an App Store release, and TestFlight distribution are still pending.
+**The developer preview is available as source.** Follow the steps below to build the Mac installer and install the receiver directly on your iPad from Xcode.
+
+**Planned release setup.** Open the Mac installer → scan the setup QR code with the iPad camera and open the installed receiver → plug in USB-C, check the pairing codes, and approve the macOS permission prompts. The Mac installer includes the audio component. Public distribution and first-time setup testing on physical devices are pending.
 
 ![A MacBook and iPad connected by one USB-C cable, each showing its own desktop](docs/images/usb-c-desk.webp)
 
@@ -40,20 +42,20 @@ This developer preview is available as source. Follow the steps below to build t
 
 - **Mac** with macOS 14 or later. HDR10 requires macOS 26 or later, compatible capture and encoding on the Mac, and an HDR10-capable iPad receiver.
 - **iPad** with iPadOS 17 or later. Connect it using a USB-C cable that supports data transfer.
+- **Virtual display.** Companion creates its own virtual display. BetterDisplay is optional.
 - **Build tools** include full Xcode, the Swift 6 toolchain, the macOS and iOS SDKs, and Python 3. This version was built with Xcode 27.2.
 
-## Build
+## Build the developer preview
 
 Run these commands from the repository root. If the active developer directory points to Command Line Tools, run `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` in the same terminal first. Adjust the path if Xcode is installed elsewhere.
 
 ```sh
 python3 build-mac.py dist/AutoSidecar-Companion.pkg
-bash build-receiver.sh dist
 ```
 
-The Mac build includes both Apple silicon and Intel binaries by default. Pass `--arch arm64` to build for Apple silicon only. The Mac app uses ad hoc signing by default, and the package is unsigned for local development. The iPad script produces `dist/AutoSidecar-iPad-unsigned.ipa` for checking the device build. Use Xcode to sign and install the receiver on your own iPad.
+The Mac build includes both Apple silicon and Intel binaries by default. Pass `--arch arm64` to build for Apple silicon only. The Mac app uses ad hoc signing by default, and the package is unsigned for local development. Next, install the receiver directly to your iPad from Xcode.
 
-## Install and pair your devices
+## Install and pair the preview
 
 1. **Mac.** Open the `dist/AutoSidecar-Companion.pkg` you built and follow the Installer prompts. It includes `/Applications/AutoSidecar Companion.app` and a Core Audio component. If the app does not appear in the menu bar, open it from Applications and start setup.
 2. **iPad.** Open [WiredDisplayClient.xcodeproj](iPadOSClient/WiredDisplayClient/WiredDisplayClient.xcodeproj) in Xcode and select the `WiredDisplayClient` scheme. In **Signing & Capabilities**, select your development team and a bundle identifier available to that team. Connect and unlock your iPad, then trust the Mac if prompted. Select the iPad as the run destination and click **Run**. Enable Developer Mode if iPadOS prompts you. [Running on a device](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) · [Developer Mode](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) · [Trust This Computer](https://support.apple.com/en-us/109054)
@@ -81,6 +83,7 @@ The Mac build includes both Apple silicon and Intel binaries by default. Pass `-
 ```sh
 swift test
 python3 CompanionTests/check_mac.py dist/AutoSidecar-Companion.pkg
+bash build-receiver.sh dist
 python3 CompanionTests/check_receiver.py dist/AutoSidecar-iPad-unsigned.ipa
 python3 CompanionTests/check_audio_routes.py .
 mkdir -p dist
@@ -94,6 +97,12 @@ xcrun swiftc -swift-version 6 macOSHost/Host/MacBookLayout.swift CompanionTests/
 
 ## Signing and license
 
-The Mac build accepts `APP_SIGN_IDENTITY` and `INSTALLER_SIGN_IDENTITY` for your signing identities. Public Mac distribution requires the appropriate Developer ID signing and notarization. Public iPad distribution depends on the signing, review, and license terms of the distribution channel. When you have an App Store product page or a public TestFlight invitation, set `AUTOSIDECAR_RECEIVER_URL` to show a download QR code during Mac setup. [Mac notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) · [TestFlight](https://developer.apple.com/testflight/)
+Once the iPad receiver has a public installation URL, maintainers can build the release package with the command below. It signs the app and installer, submits the package for Apple notarization, staples the ticket, and verifies the installer.
+
+```sh
+python3 build-mac.py --release dist/AutoSidecar-Companion.pkg
+```
+
+Set `APP_SIGN_IDENTITY` (Developer ID Application), `INSTALLER_SIGN_IDENTITY` (Developer ID Installer), `NOTARY_PROFILE` (a notarization profile stored in Keychain), and `AUTOSIDECAR_RECEIVER_URL` (an App Store product page or public TestFlight invitation). Mac setup uses that URL for the download QR code. Public iPad distribution requires signing, review, and checking the channel’s license terms. [Mac notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) · [TestFlight](https://developer.apple.com/testflight/)
 
 AutoSidecar Companion 0.2.0 is a modified version of sibawono’s WiredDisplay, dated November 25, 2026. The Mac host, iPad receiver, protocol, and audio implementation come from [upstream commit 64180c7](https://github.com/sibawono/WiredDisplay/tree/64180c7b9bed550bdd622e6c42c9d2e0773fc5ec). It is distributed under the [GNU General Public License, version 3](LICENSE). See the [changelog](docs/CHANGELOG.md) for Companion changes and use [`scripts/make-icons.sh`](scripts/make-icons.sh) to regenerate the Companion icons.

@@ -1,12 +1,14 @@
-"""建立本機測試用 Mac 安裝包。產物預設僅使用 ad hoc 應用程式簽章。"""
+"""建立 AutoSidecar Companion 的 Mac 安裝包。"""
 import argparse
+import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
-import sys
 import tempfile
+from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
 
 HERE = Path(__file__).resolve().parent
@@ -32,7 +34,7 @@ def sign(bundle, identity, entitlements=None):
     run("/usr/bin/codesign", "--verify", "--strict", bundle)
 
 
-def build_payload(temp, source, architectures, identity):
+def build_payload(temp, source, architectures, identity, receiver_url):
     app = temp / "host" / (APP + ".app")
     macos, resources = app / "Contents/MacOS", app / "Contents/Resources"
     macos.mkdir(parents=True)
@@ -75,7 +77,6 @@ def build_payload(temp, source, architectures, identity):
         "LSMinimumSystemVersion": "14.0", "LSUIElement": True, "NSHighResolutionCapable": True,
         "NSMicrophoneUsageDescription": "讀取「iPad Speaker」虛擬音訊裝置，將 Mac 聲音傳到已配對的 iPad。"
     }
-    receiver_url = os.environ.get("AUTOSIDECAR_RECEIVER_URL")
     if receiver_url:
         app_info["AutoSidecarReceiverURL"] = receiver_url
     plist(app / "Contents/Info.plist", app_info)
@@ -104,7 +105,7 @@ def component(temp, payload, location, identifier, scripts=None):
     return output
 
 
-def product(temp, app, driver, architectures, destination, installer):
+def product(temp, app, driver, architectures, installer):
     scripts = temp / "launch"
     scripts.mkdir()
     post = scripts / "postinstall"
@@ -142,23 +143,64 @@ exit 0
     pending = temp / "AutoSidecar-Companion.pkg"
     sign_args = ["--sign", installer, "--timestamp"] if installer else []
     run("productbuild", "--distribution", definition, "--package-path", temp, *sign_args, pending)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(pending, destination)
+    return pending
+
+
+def valid_receiver_url(value):
+    # Keep the same Apple download destinations as PortableSetup.receiverDownloadURL.
+    try:
+        url = urlsplit(value)
+    except ValueError:
+        return False
+    paths = {
+        "apps.apple.com": r"/(?:[a-zA-Z]{2}/)?app/(?:[^/]+/)?id[1-9][0-9]*/?",
+        "testflight.apple.com": r"/join/[a-zA-Z0-9]{8}/?",
+    }
+    return (url.scheme == "https" and url.netloc.lower() in paths and
+            re.fullmatch(paths[url.netloc.lower()], url.path) is not None)
+
+
+def notarize(package, profile):
+    response = run("xcrun", "notarytool", "submit", package, "--keychain-profile", profile,
+                   "--wait", "--output-format", "json", stdout=subprocess.PIPE, text=True)
+    result = json.loads(response.stdout)
+    if result.get("status") != "Accepted":
+        raise SystemExit(f"Apple 公證未通過（{result.get('status')}，提交 ID {result.get('id')}）")
+    run("xcrun", "stapler", "staple", package)
+    run("xcrun", "stapler", "validate", package)
+    run("/usr/sbin/spctl", "--assess", "--type", "install", package)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
     parser.add_argument("--arch", choices=("arm64", "universal"), default="universal")
+    parser.add_argument("--release", action="store_true", help="建立 Developer ID 簽署及公證的發行包")
     args = parser.parse_args()
     if args.output.exists():
-        parser.error("輸出路徑已存在，請指定新的測試包檔名")
+        parser.error("輸出路徑已存在，請指定新的安裝包檔名")
+    app_identity = os.environ.get("APP_SIGN_IDENTITY", "-")
+    installer_identity = os.environ.get("INSTALLER_SIGN_IDENTITY")
+    receiver_url = os.environ.get("AUTOSIDECAR_RECEIVER_URL", "")
+    profile = os.environ.get("NOTARY_PROFILE")
+    if receiver_url and not valid_receiver_url(receiver_url):
+        parser.error("AUTOSIDECAR_RECEIVER_URL 必須是 App Store 產品頁或 TestFlight 公開邀請")
+    if args.release:
+        if not app_identity.startswith("Developer ID Application: "):
+            parser.error("--release 需要將 APP_SIGN_IDENTITY 設為 Developer ID Application 簽署身分")
+        if not installer_identity or not installer_identity.startswith("Developer ID Installer: "):
+            parser.error("--release 需要將 INSTALLER_SIGN_IDENTITY 設為 Developer ID Installer 簽署身分")
+        if not receiver_url or not profile:
+            parser.error("--release 需要 AUTOSIDECAR_RECEIVER_URL 及鑰匙圈中的 NOTARY_PROFILE")
     architectures = ["arm64", "x86_64"] if args.arch == "universal" else ["arm64"]
     with tempfile.TemporaryDirectory(prefix="autosidecar-build-") as scratch:
         temp = Path(scratch)
-        source = HERE
-        app, driver = build_payload(temp, source, architectures, os.environ.get("APP_SIGN_IDENTITY", "-"))
-        product(temp, app, driver, architectures, args.output, os.environ.get("INSTALLER_SIGN_IDENTITY"))
+        app, driver = build_payload(temp, HERE, architectures, app_identity, receiver_url)
+        package = product(temp, app, driver, architectures, installer_identity)
+        if args.release:
+            notarize(package, profile)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(package, args.output)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,9 @@
 
 [下載 AutoSidecar Companion 原始碼（ZIP）](https://github.com/azx4121/AutoSidecar-Companion/archive/main.zip)
 
-目前提供可自行建置的開發預覽。使用下方步驟在 Mac 建置安裝包，並用 Xcode 將接收器裝到 iPad。公證 Mac 安裝包、App Store 與 TestFlight 發行仍待完成。
+**目前提供原始碼開發預覽。** 下方有 Mac 安裝包的建置指令，以及用 Xcode 把接收器直接裝到 iPad 的做法。
+
+**正式版安裝流程（待發行與實機驗證）**。雙擊 Mac 安裝包 → 用 iPad 相機掃描 Mac 設定畫面的 QR 碼，安裝並開啟接收器 → 插上 USB-C，核對兩端的配對碼並依 macOS 提示授權。Mac 安裝包內含音訊元件。
 
 ![MacBook 和 iPad 透過一條 USB-C 線相連，兩台裝置顯示各自的桌面](docs/images/usb-c-desk.webp)
 
@@ -40,20 +42,20 @@
 
 - **Mac** 需要 macOS 14 以上。畫面的 HDR10 路徑需要 macOS 26 以上、相容的 Mac 擷取與編碼，以及支援 HDR10 的 iPad 接收端。
 - **iPad** 需要 iPadOS 17 以上。請以可傳資料的 USB-C 線連接。
+- **虛擬螢幕**由公開版 Companion 建立，使用時無需安裝 BetterDisplay。
 - **建置環境**使用完整 Xcode、Swift 6 工具鏈、macOS 與 iOS SDK、Python 3。此版本已用 Xcode 27.2 建置。
 
-## 建置
+## 建置開發預覽
 
 在專案根目錄執行。若系統目前使用 Command Line Tools，可在同一個終端機先設定 `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`，或改成你安裝的 Xcode 路徑。
 
 ```sh
 python3 build-mac.py dist/AutoSidecar-Companion.pkg
-bash build-receiver.sh dist
 ```
 
-Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可加 `--arch arm64`。建置產生的 Mac App 預設採用臨時簽章，PKG 預設未簽署，供本機開發測試。iPad 腳本會產生 `dist/AutoSidecar-iPad-unsigned.ipa` 以檢查裝置建置，實機安裝請使用下面的 Xcode 步驟。
+Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可加 `--arch arm64`。建置產生的 Mac App 預設採用臨時簽章，PKG 預設未簽署，供本機開發測試。下一步在 Xcode 直接將接收器安裝到 iPad。
 
-## 在自己的裝置安裝與配對
+## 安裝預覽版與配對
 
 1. **Mac**。開啟自己建置的 `dist/AutoSidecar-Companion.pkg`，依 Installer 提示完成本機安裝。套件包含 `/Applications/AutoSidecar Companion.app` 與 Core Audio 音訊元件。若選單列沒有出現 App，從「應用程式」開啟並按「開始設定」。
 2. **iPad**。用 Xcode 開啟 [WiredDisplayClient.xcodeproj](iPadOSClient/WiredDisplayClient/WiredDisplayClient.xcodeproj)，選 `WiredDisplayClient` scheme。在 **Signing & Capabilities** 選自己的開發團隊，並使用團隊可用的 Bundle Identifier。用 USB-C 資料線接 iPad，解鎖並依提示信任這部 Mac。選 iPad 為執行目的地，再按 Run。若系統提示，依 Apple 的說明啟用「開發者模式」。[Xcode 裝置執行](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) · [開發者模式](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) · [信任這部電腦](https://support.apple.com/zh-tw/109054)
@@ -81,6 +83,7 @@ Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可�
 ```sh
 swift test
 python3 CompanionTests/check_mac.py dist/AutoSidecar-Companion.pkg
+bash build-receiver.sh dist
 python3 CompanionTests/check_receiver.py dist/AutoSidecar-iPad-unsigned.ipa
 python3 CompanionTests/check_audio_routes.py .
 mkdir -p dist
@@ -94,6 +97,12 @@ xcrun swiftc -swift-version 6 macOSHost/Host/MacBookLayout.swift CompanionTests/
 
 ## 簽署與授權
 
-Mac 打包支援透過 `APP_SIGN_IDENTITY`、`INSTALLER_SIGN_IDENTITY` 指定開發者自己的簽署身分。公開分發 Mac 套件還需相應的 Developer ID 簽署與公證。iPad 的公開分發需依所選通路處理簽署、審核及授權相容性。若將來已有 App Store 產品頁或 TestFlight 公開邀請，可用 `AUTOSIDECAR_RECEIVER_URL` 讓 Mac 首次設定顯示下載 QR 碼。[Apple Mac 公證](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) · [Apple TestFlight](https://developer.apple.com/testflight/)
+維護者備妥 iPad 公開安裝連結後，可用以下指令建立發行包。發行建置依序簽署、提交 Apple 公證、加上公證票證並驗證安裝包。
+
+```sh
+python3 build-mac.py --release dist/AutoSidecar-Companion.pkg
+```
+
+先設定 `APP_SIGN_IDENTITY`（Developer ID Application）、`INSTALLER_SIGN_IDENTITY`（Developer ID Installer）、`NOTARY_PROFILE`（已儲存於鑰匙圈的公證設定檔），以及 `AUTOSIDECAR_RECEIVER_URL`（App Store 產品頁或 TestFlight 公開邀請）。Mac 會以該網址顯示下載 QR 碼。iPad 版公開發行需完成簽署、審核及通路授權相容性確認。[Apple Mac 公證](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) · [Apple TestFlight](https://developer.apple.com/testflight/)
 
 AutoSidecar Companion 0.2.0 修改自 sibawono 的 WiredDisplay，修改版日期為 2026 年 11 月 25 日。Mac 主機、iPad 接收端、通訊與音訊實作源自 [上游版本 64180c7](https://github.com/sibawono/WiredDisplay/tree/64180c7b9bed550bdd622e6c42c9d2e0773fc5ec)。依 [GNU GPL 第 3 版](LICENSE) 發佈。Companion 的改動見 [版本紀錄](docs/CHANGELOG.md)，兩端的專屬圖示可用 [`scripts/make-icons.sh`](scripts/make-icons.sh) 重新產生。
