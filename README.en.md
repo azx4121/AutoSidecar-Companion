@@ -8,7 +8,7 @@
 - **Native Retina resolution and up to 120 FPS.** Adapts to the iPad’s display and negotiates high refresh rates on ProMotion models. A 60 Hz compatibility mode is available.
 - **HDR10 support.** Requires macOS 26 or later with compatible capture and encoding, plus an HDR-capable iPad. The stream falls back to SDR when HDR is unavailable.
 
-With input access enabled, you can also control the Mac with the iPad’s touchscreen, keyboard, or trackpad.
+**Use the keyboard and mouse connected to your Mac for the high-refresh desktop.** Touchscreen control at high refresh still needs testing on physical devices in the public Companion build.
 
 ## Downloads
 
@@ -22,7 +22,9 @@ This developer preview is available as source. Follow the steps below to build t
 
 ## Switch between high refresh and standard mode on the iPad (Mac mini prototype)
 
-- **From high refresh to standard mode.** Tap **Sidecar 觸控** (Sidecar Touch) in the upper-right corner of the iPad to switch to the native wired Sidecar mode at 60 Hz.
+**Tapping or dragging on the Mac desktop with the iPad touchscreen is currently unsupported in high-refresh mode.** You can still tap the mode button in the upper-right corner.
+
+- **From high refresh to standard mode.** To use touch on the Mac, tap **Sidecar 觸控** (Sidecar Touch) in the upper-right corner of the iPad to switch to the native wired Sidecar mode at 60 Hz.
 - **From standard mode back to high refresh.** Tap **高刷模式** (High Refresh) in the upper-right corner to return to the high-refresh Retina desktop over USB.
 
 <p align="center">
@@ -56,7 +58,7 @@ The Mac build includes both Apple silicon and Intel binaries by default. Pass `-
 1. **Mac.** Open the `dist/AutoSidecar-Companion.pkg` you built and follow the Installer prompts. It includes `/Applications/AutoSidecar Companion.app` and a Core Audio component. If the app does not appear in the menu bar, open it from Applications and start setup.
 2. **iPad.** Open [WiredDisplayClient.xcodeproj](iPadOSClient/WiredDisplayClient/WiredDisplayClient.xcodeproj) in Xcode and select the `WiredDisplayClient` scheme. In **Signing & Capabilities**, select your development team and a bundle identifier available to that team. Connect and unlock your iPad, then trust the Mac if prompted. Select the iPad as the run destination and click **Run**. Enable Developer Mode if iPadOS prompts you. [Running on a device](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) · [Developer Mode](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) · [Trust This Computer](https://support.apple.com/en-us/109054)
 3. **First pairing.** Sign in to macOS and keep the iPad receiver in the foreground. Confirm the pairing on both devices once you have checked that their codes match.
-4. **Permissions.** In **System Settings → Privacy & Security** on the Mac, allow screen recording. To hear Mac audio on the iPad, grant microphone access to the Mac app so it can read the virtual audio device. To control the Mac from the iPad, enable input in the Mac app and grant Accessibility access. Reopen the app if macOS asks. The iPad microphone starts disabled. [Screen recording access](https://support.apple.com/guide/mac-help/mchld6aa7d23/mac) · [Microphone access](https://support.apple.com/guide/mac-help/mchla1b1e1fe/mac)
+4. **Permissions.** In **System Settings → Privacy & Security** on the Mac, allow screen recording. To hear Mac audio on the iPad, grant microphone access to the Mac app so it can read the virtual audio device. To test iPad input, enable input in the Mac app and grant Accessibility access. Reopen the app if macOS asks. The iPad microphone starts disabled. [Screen recording access](https://support.apple.com/guide/mac-help/mchld6aa7d23/mac) · [Microphone access](https://support.apple.com/guide/mac-help/mchla1b1e1fe/mac)
 5. **Daily use.** While signed in to macOS, open the iPad receiver and plug in the cable. Paired devices will try to reconnect. Turn on **Mac audio on this iPad** in the receiver and adjust the **iPad Speaker** volume in the Mac’s Sound settings. Pairing and streaming start after a macOS user signs in.
 
 ## Display, audio, and connection

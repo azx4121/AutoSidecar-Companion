@@ -8,7 +8,7 @@
 - **Retina 原生解析度、最高 120 FPS 串流**。依 iPad 面板自動調整解析度與更新率，ProMotion 機型可協商高刷，也可選用 60 Hz 相容模式。
 - **支援 HDR10**。需要 macOS 26 以上、相容的 Mac 擷取與編碼，以及支援 HDR 的 iPad。HDR 條件不足時會自動使用 SDR。
 
-授權輸入後，也能用 iPad 的觸控、鍵盤或觸控板操作 Mac。
+**高刷桌面請使用連到 Mac 的鍵盤與滑鼠。** 公開版 Companion 的高刷觸控仍待實機驗收。
 
 ## 下載
 
@@ -22,7 +22,9 @@
 
 ## iPad 右上角切換高刷與一般模式（Mac mini 原型）
 
-- **從高刷切到一般模式**。在 iPad 右上角點「Sidecar 觸控」，切到原生有線並行（Sidecar）的 60 Hz 相容模式。
+**高刷模式目前無法用 iPad 觸控螢幕點按或拖曳 Mac 桌面。** iPad 右上角的模式按鈕可以點選。
+
+- **從高刷切到一般模式**。需要用手指操作 Mac 時，在 iPad 右上角點「Sidecar 觸控」，切到原生有線並行（Sidecar）的 60 Hz 相容模式。
 - **從一般切回高刷模式**。在 iPad 右上角點「高刷模式」，回到 USB Retina 高刷桌面。
 
 <p align="center">
@@ -56,7 +58,7 @@ Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可�
 1. **Mac**。開啟自己建置的 `dist/AutoSidecar-Companion.pkg`，依 Installer 提示完成本機安裝。套件包含 `/Applications/AutoSidecar Companion.app` 與 Core Audio 音訊元件。若選單列沒有出現 App，從「應用程式」開啟並按「開始設定」。
 2. **iPad**。用 Xcode 開啟 [WiredDisplayClient.xcodeproj](iPadOSClient/WiredDisplayClient/WiredDisplayClient.xcodeproj)，選 `WiredDisplayClient` scheme。在 **Signing & Capabilities** 選自己的開發團隊，並使用團隊可用的 Bundle Identifier。用 USB-C 資料線接 iPad，解鎖並依提示信任這部 Mac。選 iPad 為執行目的地，再按 Run。若系統提示，依 Apple 的說明啟用「開發者模式」。[Xcode 裝置執行](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) · [開發者模式](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) · [信任這部電腦](https://support.apple.com/zh-tw/109054)
 3. **首次配對**。讓 Mac 已登入、iPad 接收器在前景。核對兩端顯示的配對碼，相同才在 Mac 和 iPad 各自確認。
-4. **提供所需權限**。在 Mac 的「系統設定 → 隱私權與安全性」允許螢幕錄製。要在 iPad 播放 Mac 聲音時，也要允許 Mac App 使用「麥克風」權限讀取虛擬音訊裝置。要從 iPad 控制 Mac，勾選允許輸入並核准「輔助使用」。依系統提示重新開啟 App。iPad 麥克風預設關閉。[Apple 螢幕錄製](https://support.apple.com/zh-tw/guide/mac-help/mchld6aa7d23/mac) · [Apple 麥克風權限](https://support.apple.com/zh-tw/guide/mac-help/mchla1b1e1fe/mac)
+4. **提供所需權限**。在 Mac 的「系統設定 → 隱私權與安全性」允許螢幕錄製。要在 iPad 播放 Mac 聲音時，也要允許 Mac App 使用「麥克風」權限讀取虛擬音訊裝置。若要測試 iPad 輸入功能，請勾選允許輸入並核准「輔助使用」。依系統提示重新開啟 App。iPad 麥克風預設關閉。[Apple 螢幕錄製](https://support.apple.com/zh-tw/guide/mac-help/mchld6aa7d23/mac) · [Apple 麥克風權限](https://support.apple.com/zh-tw/guide/mac-help/mchla1b1e1fe/mac)
 5. **日常使用**。在 Mac 登入後，維持 iPad 接收器在前景再插線，已配對的裝置會嘗試重連。若 iPad 的接收器已關閉，先解鎖並開啟 App。要播放 Mac 聲音，在接收器啟用「Mac audio on this iPad」，並從 Mac 的「聲音」設定調整「iPad Speaker」音量。配對和串流從 macOS 使用者登入後開始。
 
 ## 畫面、聲音與連線
