@@ -1,198 +1,138 @@
-// Renders the WiredDisplay icons: an iPad in the style of the Sidecar icon.
-//
-// usage: swift scripts/make-icons.swift <output-dir>
-// writes: AppIcon-iPad-1024.png (full bleed, Continuity style; iPadOS applies the mask),
-//         AppIcon.iconset/ (the same artwork in the macOS squircle, for iconutil),
-//         MenuBar-preview.png (the menu bar glyph at 8x, both states).
+// Renders the Companion artwork for the iPad home screen and the Mac app.
+// Run scripts/make-icons.sh to update both sets of assets.
 import AppKit
+import ImageIO
+import UniformTypeIdentifiers
 
-let out = URL(fileURLWithPath: CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : ".")
-try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+let output = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
+let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+let canvas = CGRect(x: 0, y: 0, width: 1024, height: 1024)
 
-func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> NSColor {
-    NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
-            blue: CGFloat(hex & 0xFF) / 255, alpha: alpha)
+func color(_ rgb: UInt32, alpha: CGFloat = 1) -> CGColor {
+    CGColor(red: CGFloat(rgb >> 16 & 0xff) / 255,
+            green: CGFloat(rgb >> 8 & 0xff) / 255,
+            blue: CGFloat(rgb & 0xff) / 255, alpha: alpha)
 }
 
-/// Draws the artwork into a 1024x1024 coordinate space (origin bottom-left).
-/// `squircle`: macOS style (inset rounded square with shadow) vs full bleed.
-func drawIcon(squircle: Bool) {
-    let canvas = NSRect(x: 0, y: 0, width: 1024, height: 1024)
-    let tile = squircle ? canvas.insetBy(dx: 100, dy: 100) : canvas
-    let tilePath = squircle ? NSBezierPath(roundedRect: tile, xRadius: 185, yRadius: 185) : NSBezierPath(rect: tile)
-    if squircle {
-        NSGraphicsContext.saveGraphicsState()
-        let shadow = NSShadow()
-        shadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
-        shadow.shadowBlurRadius = 28
-        shadow.shadowOffset = NSSize(width: 0, height: -12)
-        shadow.set()
-        color(0x0E1F5C).setFill()
-        tilePath.fill()
-        NSGraphicsContext.restoreGraphicsState()
-    }
-    NSGraphicsContext.saveGraphicsState()
-    tilePath.addClip()
-    NSGradient(starting: color(0x3B6CF0), ending: color(0x0B1A4E))!.draw(in: tile, angle: -90)
-
-    // Everything below scales with the tile so both variants share proportions.
-    let s = tile.width / 1024
-    func r(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat) -> NSRect {
-        NSRect(x: tile.minX + x * s, y: tile.minY + y * s, width: w * s, height: h * s)
-    }
-
-    // Soft glow behind the screen.
-    NSGradient(starting: color(0x7FB2FF, 0.45), ending: color(0x7FB2FF, 0))!
-        .draw(in: NSBezierPath(ovalIn: r(130, 300, 764, 600)), relativeCenterPosition: .zero)
-
-    // Screen: white bezel, content gradient inside.
-    let bezel = r(196, 420, 632, 430)
-    let bezelPath = NSBezierPath(roundedRect: bezel, xRadius: 54 * s, yRadius: 54 * s)
-    NSColor.white.setFill()
-    bezelPath.fill()
-    let content = bezel.insetBy(dx: 26 * s, dy: 26 * s)
-    let contentPath = NSBezierPath(roundedRect: content, xRadius: 32 * s, yRadius: 32 * s)
-    NSGraphicsContext.saveGraphicsState()
-    contentPath.addClip()
-    NSGradient(colors: [color(0x9FD4FF), color(0x4F86F7), color(0x2448B8)])!.draw(in: content, angle: -60)
-    // A highlight band, suggesting a lit display.
-    let band = NSBezierPath()
-    band.move(to: NSPoint(x: content.minX, y: content.maxY - 120 * s))
-    band.line(to: NSPoint(x: content.minX + 230 * s, y: content.maxY))
-    band.line(to: NSPoint(x: content.minX + 340 * s, y: content.maxY))
-    band.line(to: NSPoint(x: content.minX, y: content.maxY - 190 * s))
-    band.close()
-    NSColor.white.withAlphaComponent(0.18).setFill()
-    band.fill()
-    NSGraphicsContext.restoreGraphicsState()
-
-    // USB-C plug entering the screen from below: metal tip, body, cable.
-    let tip = r(462, 360, 100, 66)
-    color(0xC9D3E6).setFill()
-    NSBezierPath(roundedRect: tip, xRadius: 20 * s, yRadius: 20 * s).fill()
-    color(0x8E9BB5).setFill()
-    NSBezierPath(roundedRect: r(482, 382, 60, 16), xRadius: 8 * s, yRadius: 8 * s).fill() // the port slot
-    let body = r(440, 196, 144, 176)
-    NSColor.white.setFill()
-    NSBezierPath(roundedRect: body, xRadius: 40 * s, yRadius: 40 * s).fill()
-    color(0xD7DEEC).setFill()
-    NSBezierPath(roundedRect: r(472, 228, 80, 14), xRadius: 7 * s, yRadius: 7 * s).fill()   // grip lines
-    NSBezierPath(roundedRect: r(472, 256, 80, 14), xRadius: 7 * s, yRadius: 7 * s).fill()
-    NSColor.white.setFill()
-    NSBezierPath(roundedRect: r(490, -40, 44, 250), xRadius: 22 * s, yRadius: 22 * s).fill() // cable
-    NSGraphicsContext.restoreGraphicsState()
+func rounded(_ rect: CGRect, radius: CGFloat) -> CGPath {
+    CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
 }
 
-/// iPad icon, in the style of Apple's Sidecar icon: white line art on a
-/// vivid blue gradient, no bevels or glow. Just an iPad in landscape,
-/// centred; no plug or cable (user request).
-func drawContinuityIcon() {
-    let tile = NSRect(x: 0, y: 0, width: 1024, height: 1024)
-    NSGradient(colors: [color(0x5AB8FF), color(0x1F7BFF), color(0x0A52E0)],
-               atLocations: [0, 0.55, 1], colorSpace: .sRGB)!.draw(in: tile, angle: -90)
-    let white = NSColor.white
-    let stroke: CGFloat = 46
-
-    // iPad, landscape: thick rounded outline (the bezel), translucent screen.
-    let device = NSRect(x: 512 - 330, y: 512 - 236, width: 660, height: 472)
-    let outline = NSBezierPath(roundedRect: device.insetBy(dx: stroke / 2, dy: stroke / 2), xRadius: 72, yRadius: 72)
-    outline.lineWidth = stroke
-    white.setStroke()
-    outline.stroke()
-    let screen = device.insetBy(dx: stroke + 26, dy: stroke + 26)
-    white.withAlphaComponent(0.22).setFill()
-    NSBezierPath(roundedRect: screen, xRadius: 26, yRadius: 26).fill()
-    // A soft diagonal sheen on the screen, like a lit display.
-    NSGraphicsContext.saveGraphicsState()
-    NSBezierPath(roundedRect: screen, xRadius: 26, yRadius: 26).addClip()
-    let sheen = NSBezierPath()
-    sheen.move(to: NSPoint(x: screen.minX, y: screen.minY + 70))
-    sheen.line(to: NSPoint(x: screen.minX + 280, y: screen.maxY))
-    sheen.line(to: NSPoint(x: screen.minX + 400, y: screen.maxY))
-    sheen.line(to: NSPoint(x: screen.minX, y: screen.minY - 30))
-    sheen.close()
-    white.withAlphaComponent(0.14).setFill()
-    sheen.fill()
-    NSGraphicsContext.restoreGraphicsState()
-    // Front camera dot on the long (top) edge, as on iPad Air in landscape.
-    let camera = NSRect(x: device.midX - 10, y: device.maxY - stroke / 2 - 10, width: 20, height: 20)
-    color(0x2A86FF).setFill()
-    NSBezierPath(ovalIn: camera).fill()
-
+func fill(_ context: CGContext, _ path: CGPath, _ color: CGColor) {
+    context.setFillColor(color)
+    context.addPath(path)
+    context.fillPath()
 }
 
-/// macOS icon: the same Continuity artwork as the iPad icon, inside the
-/// macOS squircle (inset tile with a soft drop shadow), so the Mac app, the
-/// iPad home screen and the iPad splash screen all show one icon.
-func drawMacContinuityIcon() {
-    let tile = NSRect(x: 100, y: 100, width: 824, height: 824)
-    let shape = NSBezierPath(roundedRect: tile, xRadius: 185, yRadius: 185)
-    NSGraphicsContext.saveGraphicsState()
-    let shadow = NSShadow()
-    shadow.shadowColor = NSColor.black.withAlphaComponent(0.3)
-    shadow.shadowBlurRadius = 28
-    shadow.shadowOffset = NSSize(width: 0, height: -12)
-    shadow.set()
-    color(0x1F7BFF).setFill()
-    shape.fill()
-    NSGraphicsContext.restoreGraphicsState()
-    NSGraphicsContext.saveGraphicsState()
-    shape.addClip()
-    let transform = NSAffineTransform()
-    transform.translateX(by: tile.minX, yBy: tile.minY)
-    transform.scale(by: tile.width / 1024)
-    transform.concat()
-    drawContinuityIcon()
-    NSGraphicsContext.restoreGraphicsState()
+func gradient(_ context: CGContext, _ colors: [CGColor], from: CGPoint, to: CGPoint) {
+    let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: nil)!
+    context.drawLinearGradient(gradient, start: from, end: to,
+                               options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
 }
 
-func png(size: Int, scale: CGFloat = 1, draw: () -> Void) -> Data {
-    let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
-                               samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
-                               bytesPerRow: 0, bitsPerPixel: 0)!
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-    NSGraphicsContext.current?.imageInterpolation = .high
-    let transform = NSAffineTransform()
-    transform.scale(by: CGFloat(size) / 1024 * scale)
-    transform.concat()
-    draw()
-    NSGraphicsContext.restoreGraphicsState()
-    return rep.representation(using: .png, properties: [:])!
+func drawScreen(_ context: CGContext, in frame: CGRect, corner: CGFloat, rim: CGFloat,
+                bezel: CGColor, colors: [CGColor]) {
+    fill(context, rounded(frame, radius: corner), bezel)
+    let glass = frame.insetBy(dx: rim, dy: rim)
+    context.saveGState()
+    context.addPath(rounded(glass, radius: corner - rim / 2))
+    context.clip()
+    gradient(context, colors,
+             from: CGPoint(x: glass.minX, y: glass.minY),
+             to: CGPoint(x: glass.maxX, y: glass.maxY))
+    let reflection = CGMutablePath()
+    reflection.move(to: CGPoint(x: glass.minX, y: glass.minY + glass.height * 0.44))
+    reflection.addLine(to: CGPoint(x: glass.midX, y: glass.maxY))
+    reflection.addLine(to: CGPoint(x: glass.maxX, y: glass.maxY))
+    reflection.addLine(to: CGPoint(x: glass.maxX, y: glass.minY + glass.height * 0.55))
+    reflection.closeSubpath()
+    fill(context, reflection, color(0xf6f9ff, alpha: 0.16))
+    context.restoreGState()
 }
 
-// iPad: full bleed, opaque (App Store rule: no alpha). Flattened through a
-// CGContext without alpha; a 3-channel NSBitmapImageRep context renders black.
-let iPadRep = NSBitmapImageRep(data: png(size: 1024) { drawContinuityIcon() })!
-let flat = CGContext(data: nil, width: 1024, height: 1024, bitsPerComponent: 8, bytesPerRow: 0,
-                     space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
-flat.draw(iPadRep.cgImage!, in: CGRect(x: 0, y: 0, width: 1024, height: 1024))
-let flatImage = flat.makeImage()!
-// Guard against an all-black result: sample the centre of the screen artwork.
-let probe = NSBitmapImageRep(cgImage: flatImage).colorAt(x: 180, y: 512)!
-guard probe.brightnessComponent > 0.3 else { fatalError("iPad icon rendered dark (\(probe)); refusing to write it") }
-let iPadURL = out.appendingPathComponent("AppIcon-iPad-1024.png") as CFURL
-let destination = CGImageDestinationCreateWithURL(iPadURL, "public.png" as CFString, 1, nil)!
-CGImageDestinationAddImage(destination, flatImage, nil)
-guard CGImageDestinationFinalize(destination) else { fatalError("could not write the iPad icon") }
+func drawArtwork(_ context: CGContext, compact: Bool) {
+    gradient(context, [color(0x111a49), color(0x303990), color(0x5640a3)],
+             from: CGPoint(x: 160, y: 50), to: CGPoint(x: 830, y: 990))
 
-// macOS iconset.
-let iconset = out.appendingPathComponent("AppIcon.iconset")
+    // The USB-C line joins the bottoms of the displays, behind their frames.
+    let cable = CGMutablePath()
+    cable.move(to: CGPoint(x: 481, y: 469))
+    cable.addCurve(to: CGPoint(x: 571, y: 276), control1: CGPoint(x: 481, y: 339),
+                   control2: CGPoint(x: 496, y: 276))
+    cable.addLine(to: CGPoint(x: 664, y: 276))
+    cable.addQuadCurve(to: CGPoint(x: 748, y: 388), control: CGPoint(x: 748, y: 276))
+    context.setStrokeColor(color(0x7eecff))
+    context.setLineCap(.round)
+    context.setLineJoin(.round)
+    context.setLineWidth(compact ? 58 : 44)
+    context.addPath(cable)
+    context.strokePath()
+
+    let pale = color(0xf4f6ff)
+    fill(context, rounded(CGRect(x: 337, y: 418, width: 58, height: 85), radius: 20), pale)
+    fill(context, rounded(CGRect(x: 260, y: 387, width: 212, height: 42), radius: 21), pale)
+    drawScreen(context, in: CGRect(x: 118, y: 460, width: 550, height: 332), corner: 64,
+               rim: compact ? 52 : 38, bezel: pale, colors: [color(0x2649be), color(0x8a9dff)])
+
+    // A narrow shadow separates the overlapping bezels at small sizes.
+    let tablet = CGRect(x: 535, y: 358, width: 375, height: 293)
+    fill(context, rounded(tablet.insetBy(dx: -15, dy: -15), radius: 73), color(0x101745))
+    drawScreen(context, in: tablet, corner: 58, rim: compact ? 48 : 34,
+               bezel: color(0xc5f8ff), colors: [color(0x1762ad), color(0x65c7fc)])
+}
+
+func png(size: Int, opaque: Bool, draw: (CGContext) -> Void) -> Data {
+    let alpha: CGImageAlphaInfo = opaque ? .noneSkipLast : .premultipliedLast
+    let context = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8,
+                            bytesPerRow: 0, space: colorSpace, bitmapInfo: alpha.rawValue)!
+    let scale = CGFloat(size) / canvas.width
+    context.scaleBy(x: scale, y: scale)
+    draw(context)
+    let data = NSMutableData()
+    let encoder = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil)!
+    CGImageDestinationAddImage(encoder, context.makeImage()!, nil)
+    precondition(CGImageDestinationFinalize(encoder), "Could not encode the app icon")
+    return data as Data
+}
+
+let iconset = output.appendingPathComponent("AppIcon.iconset", isDirectory: true)
 try FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
+// iPadOS applies its own corner mask to the square, opaque icon.
+try png(size: 1024, opaque: true) { drawArtwork($0, compact: false) }
+    .write(to: output.appendingPathComponent("AppIcon-iPad-1024.png"))
+
 for base in [16, 32, 128, 256, 512] {
     for scale in [1, 2] {
-        let name = scale == 1 ? "icon_\(base)x\(base).png" : "icon_\(base)x\(base)@2x.png"
-        try png(size: base * scale) { drawMacContinuityIcon() }.write(to: iconset.appendingPathComponent(name))
+        let size = base * scale
+        let name = "icon_\(base)x\(base)\(scale == 1 ? "" : "@2x").png"
+        let artwork = png(size: size, opaque: false) { context in
+            let tile = canvas.insetBy(dx: 100, dy: 100)
+            let shape = rounded(tile, radius: 185)
+            context.saveGState()
+            context.setShadow(offset: CGSize(width: 0, height: -12), blur: 24, color: color(0, alpha: 0.32))
+            fill(context, shape, color(0x111a49))
+            context.restoreGState()
+            context.addPath(shape)
+            context.clip()
+            context.translateBy(x: tile.minX, y: tile.minY)
+            context.scaleBy(x: tile.width / canvas.width, y: tile.height / canvas.height)
+            drawArtwork(context, compact: size <= 32)
+        }
+        try artwork.write(to: iconset.appendingPathComponent(name))
     }
 }
 
-// Menu bar glyph preview (the host draws the same shapes at runtime: MenuBarIcon.swift).
-let preview = png(size: 1024) {
-    NSColor(white: 0.93, alpha: 1).setFill(); NSRect(x: 0, y: 0, width: 1024, height: 1024).fill()
+let menuPreview = png(size: 1024, opaque: true) { context in
+    let graphics = NSGraphicsContext(cgContext: context, flipped: false)
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = graphics
+    NSColor(white: 0.94, alpha: 1).setFill()
+    canvas.fill()
     for (index, streaming) in [false, true].enumerated() {
-        let image = MenuBarGlyph.image(streaming: streaming)
-        image.draw(in: NSRect(x: 112 + CGFloat(index) * 440, y: 330, width: 22 * 16, height: 16 * 16))
+        MenuBarGlyph.image(streaming: streaming).draw(
+            in: CGRect(x: 95 + CGFloat(index) * 452, y: 384, width: 24 * 16, height: 16 * 16)
+        )
     }
+    NSGraphicsContext.restoreGraphicsState()
 }
-try preview.write(to: out.appendingPathComponent("MenuBar-preview.png"))
-print("icons written to \(out.path)")
+try menuPreview.write(to: output.appendingPathComponent("MenuBar-preview.png"))

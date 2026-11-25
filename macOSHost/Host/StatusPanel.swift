@@ -135,7 +135,7 @@ struct StatusPanelView: View {
                 .resizable()
                 .frame(width: 30, height: 30)
             VStack(alignment: .leading, spacing: 1) {
-                Text("WiredDisplay").font(.system(size: 13, weight: .semibold))
+                Text("AutoSidecar Companion").font(.system(size: 13, weight: .semibold))
                 HStack(spacing: 6) {
                     Circle().fill(s.stateColor).frame(width: 7, height: 7)
                     Text(s.stateText).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1)
@@ -406,7 +406,7 @@ struct StatusPanelView: View {
                            isOn: Binding(get: { s.openAtLogin },
                                          set: { model.snapshot.openAtLogin = $0; model.actions.setOpenAtLogin($0) }))
             }
-            Text("WiredDisplay \(s.version)")
+            Text("AutoSidecar Companion \(s.version)")
                 .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)

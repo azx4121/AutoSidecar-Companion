@@ -1,34 +1,40 @@
 import AppKit
 
-/// Menu bar glyph: an iPad in landscape with its home bar, matching the app
-/// icon (user request). Drawn as a vector template image, so it is crisp at
-/// any scale and follows the menu bar's light/dark appearance. While
-/// streaming the screen is filled and the home bar is cut out of it.
+/// Two displays matching the app icon. The template follows the menu bar's
+/// light or dark appearance, and the front screen fills in while streaming.
 enum MenuBarGlyph {
     static func image(streaming: Bool) -> NSImage {
-        let image = NSImage(size: NSSize(width: 22, height: 16), flipped: false) { _ in
+        let image = NSImage(size: NSSize(width: 24, height: 16), flipped: false) { _ in
             NSColor.black.set()
-            // iPad body: 19 x 13.5 pt, 1.5 pt bezel, rounded like the hardware.
-            let body = NSRect(x: 1.5, y: 1.25, width: 19, height: 13.5)
-            let outline = NSBezierPath(roundedRect: body.insetBy(dx: 0.75, dy: 0.75), xRadius: 3, yRadius: 3)
-            outline.lineWidth = 1.5
-            outline.stroke()
-            // Home bar: a short pill near the bottom edge of the screen.
-            let homeBar = NSRect(x: body.midX - 3, y: body.minY + 2.6, width: 6, height: 1.3)
-            let homeBarPath = NSBezierPath(roundedRect: homeBar, xRadius: 0.65, yRadius: 0.65)
-            if streaming {
-                // Lit screen above the home bar, with a clear gap between them.
-                var lit = body.insetBy(dx: 2.75, dy: 2.75)
-                let bottom = homeBar.maxY + 1.1
-                lit.size.height -= bottom - lit.minY
-                lit.origin.y = bottom
-                NSBezierPath(roundedRect: lit, xRadius: 1.2, yRadius: 1.2).fill()
+            let monitor = NSBezierPath(roundedRect: CGRect(x: 1.75, y: 5.75, width: 13.5, height: 8.5),
+                                       xRadius: 2, yRadius: 2)
+            monitor.lineWidth = 1.5
+            monitor.stroke()
+            NSBezierPath(roundedRect: CGRect(x: 7.75, y: 3.25, width: 1.5, height: 2.75),
+                         xRadius: 0.75, yRadius: 0.75).fill()
+            NSBezierPath(roundedRect: CGRect(x: 5.25, y: 2.75, width: 6.5, height: 1.5),
+                         xRadius: 0.75, yRadius: 0.75).fill()
+
+            let tablet = CGRect(x: 12, y: 2.25, width: 10.25, height: 8)
+            if let context = NSGraphicsContext.current?.cgContext {
+                context.saveGState()
+                context.setBlendMode(.clear)
+                let gap = tablet.insetBy(dx: -1.5, dy: -1.5)
+                context.addPath(CGPath(roundedRect: gap, cornerWidth: 3, cornerHeight: 3, transform: nil))
+                context.fillPath()
+                context.restoreGState()
             }
-            homeBarPath.fill()
+            let outline = NSBezierPath(roundedRect: tablet, xRadius: 2, yRadius: 2)
+            if streaming {
+                outline.fill()
+            } else {
+                outline.lineWidth = 1.5
+                outline.stroke()
+            }
             return true
         }
         image.isTemplate = true
-        image.accessibilityDescription = streaming ? "WiredDisplay (streaming)" : "WiredDisplay"
+        image.accessibilityDescription = streaming ? "AutoSidecar Companion (streaming)" : "AutoSidecar Companion"
         return image
     }
 }

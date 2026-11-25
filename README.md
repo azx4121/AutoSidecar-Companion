@@ -75,4 +75,4 @@ xcrun swiftc -swift-version 6 macOSHost/Host/MacBookLayout.swift CompanionTests/
 
 Mac 打包支援透過 `APP_SIGN_IDENTITY`、`INSTALLER_SIGN_IDENTITY` 指定開發者自己的簽署身分。公開分發 Mac 套件還需相應的 Developer ID 簽署與公證。iPad 的公開分發需依所選通路處理簽署、審核及授權相容性。若將來已有 App Store 產品頁或 TestFlight 公開邀請，可用 `AUTOSIDECAR_RECEIVER_URL` 讓 Mac 首次設定顯示下載 QR 碼。[Apple Mac 公證](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) · [Apple TestFlight](https://developer.apple.com/testflight/)
 
-AutoSidecar Companion 0.2.0 修改自 sibawono 的 WiredDisplay，修改版日期為 2026 年 11 月 25 日。原專案的 Mac 主機、iPad 接收端、通訊與音訊實作，以及圖示與生成程式，沿用 [上游版本 64180c7](https://github.com/sibawono/WiredDisplay/tree/64180c7b9bed550bdd622e6c42c9d2e0773fc5ec)。依 [GNU GPL 第 3 版](LICENSE) 發佈。Companion 的改動見 [版本紀錄](docs/CHANGELOG.md)。
+AutoSidecar Companion 0.2.0 修改自 sibawono 的 WiredDisplay，修改版日期為 2026 年 11 月 25 日。Mac 主機、iPad 接收端、通訊與音訊實作源自 [上游版本 64180c7](https://github.com/sibawono/WiredDisplay/tree/64180c7b9bed550bdd622e6c42c9d2e0773fc5ec)。依 [GNU GPL 第 3 版](LICENSE) 發佈。Companion 的改動見 [版本紀錄](docs/CHANGELOG.md)，兩端的專屬圖示可用 [`scripts/make-icons.sh`](scripts/make-icons.sh) 重新產生。

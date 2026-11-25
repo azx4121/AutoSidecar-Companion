@@ -76,7 +76,7 @@ struct StatusScreen: View {
         VStack(spacing: 28) {
             IconTile()
             VStack(spacing: 10) {
-                Text("WiredDisplay")
+                Text("AutoSidecar Companion")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 statusLine
