@@ -22,6 +22,8 @@
 		B10000000000000000000024 /* WDGeometry in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000084 /* WDGeometry */; };
 		B10000000000000000000018 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* Assets.xcassets */; };
 		B10000000000000000000019 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* LICENSE */; };
+		B1000000000000000000001A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000044 /* Localizable.strings */; };
+		B1000000000000000000001B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000045 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,8 @@
 		B10000000000000000000009 /* WiredDisplayClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WiredDisplayClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B1000000000000000000000B /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = SOURCE_ROOT; };
+		B1000000000000000000000C /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B1000000000000000000000D /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,8 @@
 				B10000000000000000000042 /* Sources */,
 				B10000000000000000000008 /* Assets.xcassets */,
 				B1000000000000000000000B /* LICENSE */,
+				B10000000000000000000044 /* Localizable.strings */,
+				B10000000000000000000045 /* InfoPlist.strings */,
 				B10000000000000000000043 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -130,6 +136,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hant",
 			);
 			mainGroup = B10000000000000000000041;
 			packageReferences = (
@@ -151,6 +158,8 @@
 			files = (
 				B10000000000000000000018 /* Assets.xcassets in Resources */,
 				B10000000000000000000019 /* LICENSE in Resources */,
+				B1000000000000000000001A /* Localizable.strings in Resources */,
+				B1000000000000000000001B /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,8 +222,8 @@
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AutoSidecar 副螢幕";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "開啟 iPad 麥克風時，將收音傳送到已配對的 Mac。";
+				INFOPLIST_KEY_CFBundleDisplayName = "AutoSidecar Display";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sends audio to your paired Mac when you turn on the iPad microphone.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -238,8 +247,8 @@
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AutoSidecar 副螢幕";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "開啟 iPad 麥克風時，將收音傳送到已配對的 Mac。";
+				INFOPLIST_KEY_CFBundleDisplayName = "AutoSidecar Display";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sends audio to your paired Mac when you turn on the iPad microphone.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -256,6 +265,21 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+
+/* Begin PBXVariantGroup section */
+		B10000000000000000000044 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (B1000000000000000000000C /* zh-Hant */,);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000045 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (B1000000000000000000000D /* zh-Hant */,);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCConfigurationList section */
 		B10000000000000000000071 /* Build configuration list for PBXNativeTarget "WiredDisplayClient" */ = {

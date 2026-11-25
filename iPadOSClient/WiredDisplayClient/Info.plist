@@ -22,7 +22,7 @@
 		<string>_wireddisplay._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>搜尋並連線到同一個 Wi-Fi 網路上的已配對 Mac。</string>
+	<string>Finds and connects to your paired Mac on the same Wi-Fi network.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

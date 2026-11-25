@@ -27,10 +27,10 @@ enum MacBookLayout {
 
         var errorDescription: String? {
             switch self {
-            case .invalidSnapshot: "無法確認 iPad 與內建顯示器的桌面配置。"
-            case .conflictingMirrors: "其他螢幕正在鏡像 iPad。請先在「顯示器」調整鏡像設定。"
-            case .didNotSettle: "macOS 未能將 iPad 切換成獨立的延伸顯示器。"
-            case .quartz(let error): "macOS 顯示配置錯誤（\(error.rawValue)）。"
+            case .invalidSnapshot: NSLocalizedString("Could not determine the layout of the iPad and the built-in display.", comment: "")
+            case .conflictingMirrors: NSLocalizedString("Another display is mirroring the iPad. Adjust mirroring in Displays settings.", comment: "")
+            case .didNotSettle: NSLocalizedString("macOS could not set the iPad as an extended display.", comment: "")
+            case .quartz(let error): String(format: NSLocalizedString("macOS display configuration error (%@).", comment: ""), String(error.rawValue))
             }
         }
     }

@@ -85,7 +85,7 @@ struct StatusScreen: View {
             wirelessControls
             if info.wirelessEnabled {
                 Button(action: enableWired) {
-                    Label("改用有線桌面（USB-C）", systemImage: "cable.connector")
+                    Label(uiText("Use a wired desktop (USB-C)"), systemImage: "cable.connector")
                 }
                 .buttonStyle(.bordered)
             }
@@ -131,10 +131,10 @@ struct StatusScreen: View {
 
     private var headline: String {
         switch info.stage {
-        case .starting: return "Starting…"
-        case .waitingForMac: return info.wirelessEnabled ? "Waiting for your Mac" : "等待 Mac 有線桌面（USB-C）"
-        case .connecting: return info.macName.isEmpty ? "Connecting…" : "Connecting to \(info.macName)…"
-        case .failed: return "Can’t start"
+        case .starting: return uiText("Starting…")
+        case .waitingForMac: return info.wirelessEnabled ? uiText("Waiting for your Mac") : uiText("Waiting for a wired Mac connection (USB-C)")
+        case .connecting: return info.macName.isEmpty ? uiText("Connecting…") : uiText("Connecting to %@…", info.macName)
+        case .failed: return uiText("Can’t start")
         }
     }
 
@@ -142,20 +142,20 @@ struct StatusScreen: View {
     private var note: String? {
         if case .failed(let reason) = info.stage { return reason }
         guard info.stage == .waitingForMac, let error = info.lastError, !error.isEmpty else { return nil }
-        return "Last session: \(error)"
+        return uiText("Last session: %@", uiText(error))
     }
 
     private var steps: some View {
         let connecting = info.stage == .connecting
         return VStack(alignment: .leading, spacing: 0) {
-            StepRow(number: 1, symbol: "cable.connector", title: "Connect the USB‑C cable",
-                    detail: "For a wired connection.", done: connecting)
+            StepRow(number: 1, symbol: "cable.connector", title: uiText("Connect the USB‑C cable"),
+                    detail: uiText("For a wired connection."), done: connecting)
             Divider().overlay(.white.opacity(0.08)).padding(.leading, 64)
-            StepRow(number: 2, symbol: "menubar.rectangle", title: "Start WiredDisplay on the Mac",
-                    detail: "It lives in the menu bar and opens at login.", done: connecting)
+            StepRow(number: 2, symbol: "menubar.rectangle", title: uiText("Start AutoSidecar Companion on the Mac"),
+                    detail: uiText("It lives in the menu bar and opens at login."), done: connecting)
             Divider().overlay(.white.opacity(0.08)).padding(.leading, 64)
-            StepRow(number: 3, symbol: "lock.shield", title: "Pair once",
-                    detail: "Confirm the code the first time this iPad meets a Mac.", done: false)
+            StepRow(number: 3, symbol: "lock.shield", title: uiText("Pair once"),
+                    detail: uiText("Confirm the code the first time this iPad meets a Mac."), done: false)
         }
         .padding(.vertical, 6)
         .frame(maxWidth: 520)
@@ -189,7 +189,7 @@ struct StatusScreen: View {
                 .frame(maxWidth: 380)
             } else {
                 Button(action: enableWireless) {
-                    Label("使用 Wi-Fi 連線", systemImage: "wifi").frame(maxWidth: .infinity)
+                    Label(uiText("Connect over Wi-Fi"), systemImage: "wifi").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(FilledButtonStyle(fill: Brand.blue))
                 .frame(maxWidth: 300)
@@ -208,10 +208,10 @@ private struct ReplugHint: View {
                 .frame(width: 36, height: 36)
                 .background(Brand.blue.opacity(0.85), in: Circle())
             VStack(alignment: .leading, spacing: 3) {
-                Text("Mac restarted? Unplug the cable and plug it back in.")
+                Text(uiText("Mac restarted? Unplug the cable and plug it back in."))
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.white)
-                Text("After a restart the Mac doesn’t see an iPad that stayed connected until the USB‑C cable is reconnected.")
+                Text(uiText("After a restart the Mac doesn’t see an iPad that stayed connected until the USB‑C cable is reconnected."))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.6))
             }
@@ -248,7 +248,12 @@ private struct StepRow: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Step \(number): \(title). \(detail)\(done ? ". Done" : "")")
+        .accessibilityLabel(stepDescription)
+    }
+
+    private var stepDescription: String {
+        let description = uiText("Step %@: %@. %@", number.formatted(), title, detail)
+        return done ? uiText("%@. Done", description) : description
     }
 }
 
@@ -274,17 +279,17 @@ struct PairingScreen: View {
         VStack(spacing: 26) {
             IconTile(symbol: "lock.shield.fill", size: 84)
             VStack(spacing: 8) {
-                Text("Pair with \(macName.isEmpty ? "this Mac" : "“\(macName)”")?")
+                Text(macName.isEmpty ? uiText("Pair with this Mac?") : uiText("Pair with “%@”?", macName))
                     .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
-                Text("Check that the WiredDisplay menu on the Mac shows the same code.")
+                Text(uiText("Check that the AutoSidecar Companion menu on the Mac shows the same code."))
                     .font(.body)
                     .foregroundStyle(.white.opacity(0.65))
                     .multilineTextAlignment(.center)
             }
             CodeView(code: code)
-            Label("A paired Mac shows its screen here and receives this iPad’s touch, keyboard and microphone input.",
+            Label(uiText("A paired Mac shows its screen here and receives this iPad’s touch, keyboard and microphone input."),
                   systemImage: "info.circle")
                 .font(.footnote)
                 .foregroundStyle(.white.opacity(0.5))
@@ -292,11 +297,11 @@ struct PairingScreen: View {
                 .frame(maxWidth: 440)
             HStack(spacing: 14) {
                 Button { answer(false) } label: {
-                    Text("Don’t Pair").frame(maxWidth: .infinity)
+                    Text(uiText("Don’t Pair")).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(FilledButtonStyle(fill: .white.opacity(0.12)))
                 Button { answer(true) } label: {
-                    Text("Pair").fontWeight(.semibold).frame(maxWidth: .infinity)
+                    Text(uiText("Pair")).fontWeight(.semibold).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(FilledButtonStyle(fill: Brand.blue))
                 .keyboardShortcut(.defaultAction)
@@ -333,7 +338,7 @@ private struct CodeView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Pairing code \(code)")
+        .accessibilityLabel(uiText("Pairing code %@", code))
     }
 }
 
@@ -392,142 +397,142 @@ struct ControlsContent: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header
-                section("Connection") {
+                section(uiText("Connection")) {
                     ToggleRow(symbol: "wifi", title: "Wi-Fi",
-                              detail: "開啟後自動重連已配對的 Mac。關閉時只使用 USB-C。",
+                              detail: uiText("Automatically reconnects to paired Macs. Turn off to use USB-C only."),
                               isOn: $wirelessEnabled)
                     if let transport = summary.transport {
                         InfoRow(symbol: "link",
-                                title: summary.streaming ? "Connected over \(transport)" : "Connecting over \(transport)",
+                                title: summary.streaming ? uiText("Connected over %@", transport) : uiText("Connecting over %@", transport),
                                 value: nil)
                     }
                 }
-                section("目前串流") {
+                section(uiText("Current Stream")) {
                     if let size = summary.logicalSize {
-                        InfoRow(symbol: "rectangle.on.rectangle", title: "桌面空間　\(size) 點", value: nil)
+                        InfoRow(symbol: "rectangle.on.rectangle", title: uiText("Desktop space · %@ pt", size), value: nil)
                     }
                     if let detail = summary.detail {
                         InfoRow(symbol: "dial.medium", title: detail, value: nil, secondary: true)
                     }
                     if summary.streaming {
-                        InfoRow(symbol: "film.stack", title: "提交至呈現器的影格",
-                                value: "已提交 \(summary.framesShown.formatted()) · 拒收 \(summary.framesDropped.formatted())",
+                        InfoRow(symbol: "film.stack", title: uiText("Frames submitted to the renderer"),
+                                value: uiText("%@ submitted · %@ rejected", summary.framesShown.formatted(), summary.framesDropped.formatted()),
                                 secondary: true)
                     }
-                    ToggleRow(symbol: "circle.lefthalf.filled", title: "Smooth gradients",
-                              detail: "GPU dithering against banding.", isOn: $smoothGradients)
+                    ToggleRow(symbol: "circle.lefthalf.filled", title: uiText("Smooth gradients"),
+                              detail: uiText("GPU dithering against banding."), isOn: $smoothGradients)
                     if let metalRenderer {
-                        ToggleRow(symbol: "bolt.horizontal", title: "Metal renderer",
-                                  detail: "Draws each frame as soon as it is decoded (lower latency). Off: the system video layer.", isOn: metalRenderer)
+                        ToggleRow(symbol: "bolt.horizontal", title: uiText("Metal renderer"),
+                                  detail: uiText("Draws each frame as soon as it is decoded (lower latency). Off: the system video layer."), isOn: metalRenderer)
                     }
                 }
-                section("Audio") {
-                    ToggleRow(symbol: "speaker.wave.2.fill", title: "Mac audio on this iPad", detail: nil, isOn: $speaker)
+                section(uiText("Audio")) {
+                    ToggleRow(symbol: "speaker.wave.2.fill", title: uiText("Mac audio on this iPad"), detail: nil, isOn: $speaker)
                     if dedicatedSpeaker {
                         if summary.streaming, speaker {
-                            InfoRow(symbol: "waveform", title: "獨立 USB 雙聲道 PCM", value: "48 kHz Float32", secondary: true)
+                            InfoRow(symbol: "waveform", title: uiText("Dedicated USB stereo PCM"), value: "48 kHz Float32", secondary: true)
                         }
                     } else {
-                        ToggleRow(symbol: "mic.fill", title: "iPad microphone to Mac", detail: nil, isOn: $microphone)
+                        ToggleRow(symbol: "mic.fill", title: uiText("iPad microphone to Mac"), detail: nil, isOn: $microphone)
                     }
                     if summary.streaming, speaker, !dedicatedSpeaker {
                         InfoRow(symbol: "hifispeaker", title: "iPad 實際輸出",
-                                value: summary.outputRoute ?? "等待音訊輸出", secondary: true)
-                        InfoRow(symbol: "waveform", title: summary.speakerFormat ?? "Waiting for Mac audio",
-                                value: "\(summary.speakerFramesReceived.formatted()) frames received · \(summary.speakerUnderruns.formatted()) underruns",
+                                value: summary.outputRoute ?? uiText("Waiting for audio output"), secondary: true)
+                        InfoRow(symbol: "waveform", title: summary.speakerFormat ?? uiText("Waiting for Mac audio"),
+                                value: uiText("%@ frames received · %@ underruns", summary.speakerFramesReceived.formatted(), summary.speakerUnderruns.formatted()),
                                 secondary: true)
                     }
                     if microphone {
-                        Label("Live — choose “iPad Microphone” on the Mac", systemImage: "waveform")
+                        Label(uiText("Live — choose “iPad Microphone” on the Mac"), systemImage: "waveform")
                             .font(.footnote.weight(.medium))
                             .foregroundStyle(.orange)
                             .padding(.leading, 38)
                     }
                 }
-                section("Touch") {
+                section(uiText("Touch")) {
                     DisclosureGroup(isExpanded: $showGestures) {
                         VStack(alignment: .leading, spacing: 10) {
-                            GestureRow(symbol: "hand.tap", gesture: "Tap", action: "Click")
-                            GestureRow(symbol: "hand.draw", gesture: "Drag", action: "Scroll")
-                            GestureRow(symbol: "hand.point.up.left", gesture: "Hold, then drag", action: "Select · move")
-                            GestureRow(symbol: "hand.tap", gesture: "Two-finger tap", action: "Right click")
-                            GestureRow(symbol: "arrow.up.left.and.arrow.down.right", gesture: "Pinch", action: "Zoom")
-                            GestureRow(symbol: "arrow.clockwise", gesture: "Two-finger rotate", action: "Rotate")
-                            GestureRow(symbol: "hand.pinch", gesture: "Three-finger pinch / spread", action: "Copy · paste")
-                            GestureRow(symbol: "arrow.uturn.backward", gesture: "Three-finger swipe", action: "Undo · redo")
+                            GestureRow(symbol: "hand.tap", gesture: uiText("Tap"), action: uiText("Click"))
+                            GestureRow(symbol: "hand.draw", gesture: uiText("Drag"), action: uiText("Scroll"))
+                            GestureRow(symbol: "hand.point.up.left", gesture: uiText("Hold, then drag"), action: uiText("Select · move"))
+                            GestureRow(symbol: "hand.tap", gesture: uiText("Two-finger tap"), action: uiText("Right click"))
+                            GestureRow(symbol: "arrow.up.left.and.arrow.down.right", gesture: uiText("Pinch"), action: uiText("Zoom"))
+                            GestureRow(symbol: "arrow.clockwise", gesture: uiText("Two-finger rotate"), action: uiText("Rotate"))
+                            GestureRow(symbol: "hand.pinch", gesture: uiText("Three-finger pinch / spread"), action: uiText("Copy · paste"))
+                            GestureRow(symbol: "arrow.uturn.backward", gesture: uiText("Three-finger swipe"), action: uiText("Undo · redo"))
                         }
                         .padding(.top, 10)
                     } label: {
-                        Label("Gestures", systemImage: "hand.raised.fingers.spread")
+                        Label(uiText("Gestures"), systemImage: "hand.raised.fingers.spread")
                             .font(.body)
                     }
                     .tint(.primary)
-                    Text("Touch, keyboard and trackpad need “Allow input” in the Mac’s WiredDisplay menu.")
+                    Text(uiText("Enable “Allow Input from iPad” in the Mac menu to use touch, keyboard, and trackpad input."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                section("Keyboard & trackpad") {
+                section(uiText("Keyboard & trackpad")) {
                     if summary.streaming {
-                        InfoRow(symbol: "keyboard", title: "Input events queued",
-                                value: "\(summary.keyEventsSent.formatted()) keyboard · \(summary.pointerEventsSent.formatted()) pointer",
+                        InfoRow(symbol: "keyboard", title: uiText("Input events queued"),
+                                value: uiText("%@ keyboard · %@ pointer", summary.keyEventsSent.formatted(), summary.pointerEventsSent.formatted()),
                                 secondary: true)
                     }
                     DisclosureGroup(isExpanded: $showShortcuts) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("iPadOS keeps these for itself, so use Control instead of Command:")
+                            Text(uiText("iPadOS keeps these for itself, so use Control instead of Command:"))
                                 .font(.footnote).foregroundStyle(.secondary)
-                            ShortcutRow(keys: "⌃ Tab", mac: "⌘ Tab", action: "Switch apps")
-                            ShortcutRow(keys: "⌃ ⇧ Tab", mac: "⌘ ⇧ Tab", action: "Switch back")
-                            ShortcutRow(keys: "⌃ `", mac: "⌘ `", action: "App windows")
-                            ShortcutRow(keys: "⌃ Space", mac: "⌘ Space", action: "Spotlight")
-                            ShortcutRow(keys: "⌃ ⇧ 3 · 4 · 5", mac: "⌘ ⇧ 3 · 4 · 5", action: "Screenshot")
-                            Text("Hold ⌃ and press Tab again to move through apps, like ⌘ Tab on a Mac. All other shortcuts (⌘ C, ⌘ V, ⌘ W …) go to the Mac as they are.")
+                            ShortcutRow(keys: "⌃ Tab", mac: "⌘ Tab", action: uiText("Switch apps"))
+                            ShortcutRow(keys: "⌃ ⇧ Tab", mac: "⌘ ⇧ Tab", action: uiText("Switch back"))
+                            ShortcutRow(keys: "⌃ `", mac: "⌘ `", action: uiText("App windows"))
+                            ShortcutRow(keys: "⌃ Space", mac: "⌘ Space", action: uiText("Spotlight"))
+                            ShortcutRow(keys: "⌃ ⇧ 3 · 4 · 5", mac: "⌘ ⇧ 3 · 4 · 5", action: uiText("Screenshot"))
+                            Text(uiText("Hold ⌃ and press Tab again to move through apps, like ⌘ Tab on a Mac. All other shortcuts (⌘ C, ⌘ V, ⌘ W …) go to the Mac as they are."))
                                 .font(.footnote).foregroundStyle(.secondary)
                             Divider().padding(.vertical, 2)
-                            GestureRow(symbol: "rectangle.and.hand.point.up.left", gesture: "Two-finger scroll", action: "Scroll")
-                            GestureRow(symbol: "cursorarrow.click.2", gesture: "Two-finger click", action: "Right click")
-                            GestureRow(symbol: "arrow.up.left.and.arrow.down.right", gesture: "Pinch", action: "Zoom")
-                            GestureRow(symbol: "arrow.clockwise", gesture: "Rotate", action: "Rotate")
-                            Text("Three- and four-finger swipes stay with iPadOS. Use ⌃ ↑ for Mission Control and ⌃ ← / → for Spaces.")
+                            GestureRow(symbol: "rectangle.and.hand.point.up.left", gesture: uiText("Two-finger scroll"), action: uiText("Scroll"))
+                            GestureRow(symbol: "cursorarrow.click.2", gesture: uiText("Two-finger click"), action: uiText("Right click"))
+                            GestureRow(symbol: "arrow.up.left.and.arrow.down.right", gesture: uiText("Pinch"), action: uiText("Zoom"))
+                            GestureRow(symbol: "arrow.clockwise", gesture: uiText("Rotate"), action: uiText("Rotate"))
+                            Text(uiText("Three- and four-finger swipes stay with iPadOS. Use ⌃ ↑ for Mission Control and ⌃ ← / → for Spaces."))
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                         .padding(.top, 10)
                     } label: {
-                        Label("Shortcuts", systemImage: "keyboard")
+                        Label(uiText("Shortcuts"), systemImage: "keyboard")
                             .font(.body)
                     }
                     .tint(.primary)
                 }
                 if let device {
-                    section("這部 iPad 的能力") {
-                        InfoRow(symbol: "ipad.landscape", title: "機型", value: device.model)
-                        InfoRow(symbol: "square.resize", title: "面板像素", value: device.panel)
+                    section(uiText("This iPad")) {
+                        InfoRow(symbol: "ipad.landscape", title: uiText("Model"), value: device.model)
+                        InfoRow(symbol: "square.resize", title: uiText("Panel pixels"), value: device.panel)
                         if device.pixelsPerInch > 0 {
-                            InfoRow(symbol: "circle.grid.3x3", title: "像素密度", value: "\(device.pixelsPerInch) ppi")
+                            InfoRow(symbol: "circle.grid.3x3", title: uiText("Pixel density"), value: "\(device.pixelsPerInch) ppi")
                         }
-                        InfoRow(symbol: "gauge.with.dots.needle.67percent", title: "系統回報的更新率上限", value: "\(device.maxRefreshHz) Hz")
-                        InfoRow(symbol: "film", title: "HEVC 硬體解碼", value: device.hevcHardware ? "支援" : "使用 H.264")
-                        InfoRow(symbol: "sun.max", title: "接收端 HDR10", value: device.supportsHDR10 ? "可接收" : "使用 SDR")
-                        InfoRow(symbol: "paintpalette", title: "螢幕廣色域", value: device.wideGamut ? "P3" : "標準")
+                        InfoRow(symbol: "gauge.with.dots.needle.67percent", title: uiText("System-reported maximum refresh rate"), value: "\(device.maxRefreshHz) Hz")
+                        InfoRow(symbol: "film", title: uiText("HEVC hardware decoding"), value: device.hevcHardware ? uiText("Supported") : uiText("Uses H.264"))
+                        InfoRow(symbol: "sun.max", title: uiText("HDR10 reception"), value: device.supportsHDR10 ? uiText("Available") : uiText("Uses SDR"))
+                        InfoRow(symbol: "paintpalette", title: "螢幕廣色域", value: device.wideGamut ? "P3" : uiText("Standard"))
                     }
                 }
-                section("Security") {
+                section(uiText("Security")) {
                     if pairedMacs.isEmpty {
-                        InfoRow(symbol: "lock.open", title: "No paired Mac", value: nil, secondary: true)
+                        InfoRow(symbol: "lock.open", title: uiText("No paired Mac"), value: nil, secondary: true)
                     } else {
                         ForEach(pairedMacs) { mac in
                             InfoRow(symbol: "lock.shield.fill", title: mac.name, value: String(mac.fingerprint.prefix(8)))
                         }
-                        Button("Forget Paired Macs…", role: .destructive) { confirmForget = true }
+                        Button(uiText("Forget Paired Macs…"), role: .destructive) { confirmForget = true }
                             .font(.body)
-                            .confirmationDialog("Forget all paired Macs?", isPresented: $confirmForget) {
-                                Button("Forget", role: .destructive, action: forgetPaired)
+                            .confirmationDialog(uiText("Forget all paired Macs?"), isPresented: $confirmForget) {
+                                Button(uiText("Forget"), role: .destructive, action: forgetPaired)
                             } message: {
-                                Text("The next Mac that connects must be paired again with a code.")
+                                Text(uiText("The next Mac that connects must be paired again with a code."))
                             }
                     }
                 }
                 Button(action: reconnect) {
-                    Label("Reconnect", systemImage: "arrow.clockwise")
+                    Label(uiText("Reconnect"), systemImage: "arrow.clockwise")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                 }
@@ -543,7 +548,7 @@ struct ControlsContent: View {
         HStack(spacing: 14) {
             IconTile(size: 48)
             VStack(alignment: .leading, spacing: 4) {
-                Text(summary.macName.isEmpty ? "WiredDisplay" : summary.macName)
+                Text(summary.macName.isEmpty ? "AutoSidecar Companion" : summary.macName)
                     .font(.title3.weight(.semibold))
                     .lineLimit(1)
                 StatusPill(streaming: summary.streaming)
@@ -571,7 +576,7 @@ private struct StatusPill: View {
     var body: some View {
         HStack(spacing: 6) {
             Circle().fill(streaming ? Color.green : Color.secondary).frame(width: 7, height: 7)
-            Text(streaming ? "Streaming over USB‑C" : "Not connected")
+            Text(streaming ? uiText("Streaming") : uiText("Not connected"))
                 .font(.caption.weight(.medium))
         }
         .padding(.horizontal, 9).padding(.vertical, 4)
@@ -699,7 +704,7 @@ struct ControlsButton: View {
         }
         .buttonStyle(.plain)
         .padding(16)
-        .accessibilityLabel("Session controls")
+        .accessibilityLabel(uiText("Session controls"))
     }
 }
 
@@ -718,4 +723,11 @@ struct FilledButtonStyle: ButtonStyle {
             .contentShape(Capsule())
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
+}
+
+// SwiftUI and AppKit share the same bundle translations. Device names and
+// technical details remain arguments, so they are never read as format strings.
+func uiText(_ key: String, _ arguments: CVarArg...) -> String {
+    let localized = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
+    return arguments.isEmpty ? localized : String(format: localized, locale: .current, arguments: arguments)
 }

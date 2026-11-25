@@ -43,7 +43,7 @@ final class AppModel {
         guard let hello = makeHello() else {
             session?.setVideoActive(false)
             if videoView.window != nil {
-                connection.lastError = "請將接收器開在 iPad 內建螢幕，等候讀取顯示資訊。"
+                connection.lastError = uiText("Open the receiver on the iPad’s built-in display and wait for it to read display information.")
             }
             return
         }
@@ -172,7 +172,7 @@ final class AppModel {
             if await ClientAudio.requestMicrophonePermission() {
                 setAudio(speaker: audio.speakerOn, microphone: true)
             } else {
-                connection.lastError = "麥克風權限尚未開啟。請至「設定」的「隱私權與安全性」中檢查麥克風權限。"
+                connection.lastError = uiText("Microphone permission is off. In Settings, open Privacy & Security and check Microphone access.")
                 connection.microphoneOn = false
             }
         }
@@ -320,12 +320,12 @@ struct RootView: View {
                     Button {
                         app.session?.switchToWirelessSidecar()
                     } label: {
-                        Label("無線並行 60 Hz", systemImage: "hand.tap")
+                        Label(uiText("Wireless Sidecar 60 Hz"), systemImage: "hand.tap")
                             .font(.callout.weight(.semibold))
                             .frame(minHeight: 32)
                     }
                     .buttonStyle(.bordered)
-                    .accessibilityHint("以手指或巧控鍵盤操作 Mac。聲音會回到 Mac 的輸出。")
+                    .accessibilityHint(uiText("Use touch or Magic Keyboard to control the Mac. Audio returns to the Mac output."))
                 }
                 ControlsButton(streaming: connection.phase == .streaming) { showControls.toggle() }
                     .popover(isPresented: $showControls) {
@@ -402,7 +402,11 @@ struct ControlsPanel: View {
             macName: connection.macName,
             streaming: connection.phase == .streaming,
             logicalSize: config.map { "\($0.pointWidth) × \($0.pointHeight)" },
-            detail: config.map { "\($0.pixelWidth) × \($0.pixelHeight) px · 目標 \($0.refreshHz) FPS · \($0.hdr10 ? "HDR10" : "SDR") · \($0.codec == .hevc ? "HEVC" : "H.264")" },
+            detail: config.map {
+                let pixels = "\($0.pixelWidth) × \($0.pixelHeight) px"
+                return uiText("%@ · target %@ FPS · %@ · %@", pixels, $0.refreshHz.formatted(),
+                              $0.hdr10 ? "HDR10" : "SDR", $0.codec == .hevc ? "HEVC" : "H.264")
+            },
             framesShown: connection.framesShown,
             framesDropped: connection.framesDropped,
             transport: connection.transport,

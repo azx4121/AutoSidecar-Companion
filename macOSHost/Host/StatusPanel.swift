@@ -13,10 +13,10 @@ struct PanelSnapshot {
         var key: String
         /// "iPad Air 13-inch (M2) · Key 0d7238ca"; the key alone when the
         /// model was never read (paired before it was recorded).
-        var detail: String { [model, "Key \(key)"].compactMap { $0 }.joined(separator: " · ") }
+        var detail: String { [model, uiText("Key %@", key)].compactMap { $0 }.joined(separator: " · ") }
     }
 
-    var stateText = "Waiting for the iPad on USB"
+    var stateText = uiText("Waiting for the iPad on USB")
     var stateColor: Color = .orange
     var connectedFor: String?
     /// Other iPads streaming at the same time (D-041).
@@ -85,11 +85,11 @@ final class PanelModel: ObservableObject {
         }
         var title: String {
             switch self {
-            case .display: return "Display"
-            case .input: return "Input"
-            case .audio: return "Audio"
-            case .security: return "Security"
-            case .general: return "General"
+            case .display: return uiText("Display")
+            case .input: return uiText("Input")
+            case .audio: return uiText("Audio")
+            case .security: return uiText("Security")
+            case .general: return uiText("General")
             }
         }
     }
@@ -145,7 +145,7 @@ struct StatusPanelView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 }
                 if !s.otherIPads.isEmpty {
-                    Text("Also: " + s.otherIPads.joined(separator: ", ") + " · settings apply to all")
+                    Text(uiText("Also: %@ · settings apply to all", s.otherIPads.joined(separator: ", ")))
                         .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true).lineLimit(1)
                 }
@@ -196,8 +196,8 @@ struct StatusPanelView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            FooterButton(title: "Show Log", symbol: "doc.text.magnifyingglass", action: model.actions.showLog)
-            FooterButton(title: "Quit", symbol: "power", action: model.actions.quit)
+            FooterButton(title: uiText("Show Log"), symbol: "doc.text.magnifyingglass", action: model.actions.showLog)
+            FooterButton(title: uiText("Quit"), symbol: "power", action: model.actions.quit)
         }
     }
 
@@ -207,9 +207,9 @@ struct StatusPanelView: View {
         VStack(spacing: 8) {
             Card {
                 if let looksLike = s.looksLike {
-                    InfoLine(symbol: "rectangle.on.rectangle", title: "Looks like \(looksLike)", detail: s.pixels)
+                    InfoLine(symbol: "rectangle.on.rectangle", title: uiText("Looks like %@", looksLike), detail: s.pixels)
                     NativeSegmented(
-                        segments: VirtualDisplayController.Space.allCases.map { .title($0.title) },
+                        segments: VirtualDisplayController.Space.allCases.map { .title(uiText($0.title)) },
                         selection: Binding(
                             get: { s.displaySpace.flatMap { VirtualDisplayController.Space.allCases.firstIndex(of: $0) } ?? -1 },
                             set: { index in
@@ -220,21 +220,21 @@ struct StatusPanelView: View {
                         controlSize: .regular, fontSize: 11, isEnabled: s.canChangeDisplaySpace
                     )
                     .frame(maxWidth: .infinity)
-                    .accessibilityLabel("Display space")
+                    .accessibilityLabel(uiText("Display space"))
                     if s.displaySpaceError {
-                        Text("Couldn’t change display space.").font(.system(size: 11)).foregroundStyle(.secondary)
+                        Text(uiText("Couldn’t change display space.")).font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                     if let encoding = s.encoding {
                         CardDivider()
                         InfoLine(symbol: "film", title: encoding, detail: s.limitNote)
                     }
                 } else {
-                    InfoLine(symbol: "display.trianglebadge.exclamationmark", title: "No iPad display",
-                             detail: "Open WiredDisplay on the iPad and connect the cable")
+                    InfoLine(symbol: "display.trianglebadge.exclamationmark", title: uiText("No iPad display"),
+                             detail: uiText("Open AutoSidecar Companion on the iPad and connect the cable"))
                 }
                 CardDivider()
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Brightness").font(.system(size: 11, weight: .semibold))
+                    Text(uiText("Brightness")).font(.system(size: 11, weight: .semibold))
                     HStack(spacing: 10) {
                         Image(systemName: "sun.min").foregroundStyle(.secondary)
                         NativeSlider(value: Binding(get: { Double(s.brightness ?? 0.5) },
@@ -245,15 +245,15 @@ struct StatusPanelView: View {
                             .frame(height: NativeSlider.sliderHeight)
                         Image(systemName: "sun.max").foregroundStyle(.secondary)
                     }
-                    Text(s.brightness == nil ? "Available while an iPad is connected"
-                         : "Real iPad backlight · the brightness keys work too")
+                    Text(s.brightness == nil ? uiText("Available while an iPad is connected")
+                         : uiText("Real iPad backlight · the brightness keys work too"))
                         .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Card {
-                Text("Quality").font(.system(size: 11, weight: .semibold))
-                NativeSegmented(segments: QualityPreset.allCases.map { .titled($0.shortTitle, symbol: $0.symbol) },
+                Text(uiText("Quality")).font(.system(size: 11, weight: .semibold))
+                NativeSegmented(segments: QualityPreset.allCases.map { .titled(uiText($0.shortTitle), symbol: $0.symbol) },
                                 selection: Binding(get: { s.quality.flatMap { QualityPreset.allCases.firstIndex(of: $0) } ?? -1 },
                                                    set: { index in
                                                        let preset = QualityPreset.allCases[index]
@@ -263,46 +263,46 @@ struct StatusPanelView: View {
                                 controlSize: .regular, fontSize: 11)
                     .frame(maxWidth: .infinity)
                 if let quality = s.quality {
-                    Text("\(quality.formatTitle) · \(quality.detail)").font(.system(size: 10.5)).foregroundStyle(.secondary)
+                    Text("\(quality.formatTitle) · \(uiText(quality.detail))").font(.system(size: 10.5)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Card {
-                ToggleLine(title: "Match the iPad's refresh rate",
-                           detail: s.matchRefresh ? "Up to 120 Hz on iPad Pro (ProMotion); 60 Hz on other iPads"
-                               : "Always 60 Hz (less work for the Mac)",
+                ToggleLine(title: uiText("Match the iPad's refresh rate"),
+                           detail: s.matchRefresh ? uiText("Up to 120 Hz on iPad Pro (ProMotion); 60 Hz on other iPads")
+                               : uiText("Always 60 Hz (less work for the Mac)"),
                            isOn: Binding(get: { s.matchRefresh },
                                          set: { model.snapshot.matchRefresh = $0; model.actions.setMatchRefresh($0) }))
                 CardDivider()
-                ToggleLine(title: "Draw the cursor on the iPad",
-                           detail: s.localCursor ? "The pointer moves with ~1 ms delay instead of waiting for the video"
-                               : "The cursor is part of the video (as before)",
+                ToggleLine(title: uiText("Draw the cursor on the iPad"),
+                           detail: s.localCursor ? uiText("The pointer moves with ~1 ms delay instead of waiting for the video")
+                               : uiText("The cursor is part of the video (as before)"),
                            isOn: Binding(get: { s.localCursor },
                                          set: { model.snapshot.localCursor = $0; model.actions.setLocalCursor($0) }))
             }
-            LinkRow(title: "Display Settings…", symbol: "arrow.up.forward.app", action: model.actions.openDisplaySettings)
+            LinkRow(title: uiText("Display Settings…"), symbol: "arrow.up.forward.app", action: model.actions.openDisplaySettings)
         }
     }
 
     private var inputTab: some View {
         VStack(spacing: 8) {
             Card {
-                ToggleLine(title: "Allow Input from iPad", detail: "Touch, Magic Keyboard and trackpad",
+                ToggleLine(title: uiText("Allow Input from iPad"), detail: uiText("Touch, Magic Keyboard and trackpad"),
                            isOn: Binding(get: { s.inputEnabled },
                                          set: { model.snapshot.inputEnabled = $0; model.actions.setInput($0) }))
                 if !s.accessibility {
                     CardDivider()
-                    WarningLine(text: "需要 macOS 的鍵盤與指標控制權限。",
-                                button: "Grant…", action: model.actions.openAccessibility)
+                    WarningLine(text: uiText("macOS permission is needed to control the keyboard and pointer."),
+                                button: uiText("Grant…"), action: model.actions.openAccessibility)
                 }
             }
             Card {
-                Text("Shortcuts on the iPad keyboard").font(.system(size: 11, weight: .semibold))
-                ShortcutLine(keys: "⌃ Tab", mac: "⌘ Tab", what: "Switch apps")
-                ShortcutLine(keys: "⌃ Space", mac: "⌘ Space", what: "Spotlight")
-                ShortcutLine(keys: "⌃ ⇧ 3 / 4 / 5", mac: "⌘ ⇧ 3 / 4 / 5", what: "Screenshot")
-                ShortcutLine(keys: "⌃ ↑  ⌃ ← →", mac: nil, what: "Mission Control · Spaces")
-                Text("Pinch and rotate work on the touch screen and the trackpad.")
+                Text(uiText("Shortcuts on the iPad keyboard")).font(.system(size: 11, weight: .semibold))
+                ShortcutLine(keys: "⌃ Tab", mac: "⌘ Tab", what: uiText("Switch apps"))
+                ShortcutLine(keys: "⌃ Space", mac: "⌘ Space", what: uiText("Spotlight"))
+                ShortcutLine(keys: "⌃ ⇧ 3 / 4 / 5", mac: "⌘ ⇧ 3 / 4 / 5", what: uiText("Screenshot"))
+                ShortcutLine(keys: "⌃ ↑  ⌃ ← →", mac: nil, what: uiText("Mission Control · Spaces"))
+                Text(uiText("Pinch and rotate work on the touch screen and the trackpad."))
                     .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -312,31 +312,31 @@ struct StatusPanelView: View {
     private var audioTab: some View {
         VStack(spacing: 8) {
             Card {
-                StatusLine(symbol: s.speaker ? "speaker.wave.2.fill" : "speaker.slash", title: "Mac sound on iPad",
-                           detail: "Output device “iPad Speaker”", on: s.speaker)
+                StatusLine(symbol: s.speaker ? "speaker.wave.2.fill" : "speaker.slash", title: uiText("Mac sound on iPad"),
+                           detail: uiText("Output device “iPad Speaker”"), on: s.speaker)
                 CardDivider()
-                StatusLine(symbol: s.microphone ? "mic.fill" : "mic.slash", title: "iPad microphone",
-                           detail: "Input device “iPad Microphone”", on: s.microphone)
-                Text("Turn these on or off in the WiredDisplay app on the iPad.")
+                StatusLine(symbol: s.microphone ? "mic.fill" : "mic.slash", title: uiText("iPad microphone"),
+                           detail: uiText("Input device “iPad Microphone”"), on: s.microphone)
+                Text(uiText("Turn these on or off in AutoSidecar Companion on the iPad."))
                     .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Card {
-                ToggleLine(title: "Switch to headphones automatically",
-                           detail: "AirPods, Bluetooth, USB-C earphones: sound moves to them, and back to the iPad when they disconnect",
+                ToggleLine(title: uiText("Switch to headphones automatically"),
+                           detail: uiText("AirPods, Bluetooth, USB-C earphones: sound moves to them, and back to the iPad when they disconnect"),
                            isOn: Binding(get: { s.autoSwitchAudio },
                                          set: { model.snapshot.autoSwitchAudio = $0; model.actions.setAutoSwitchAudio($0) }))
                 if s.autoSwitchAudio {
                     CardDivider()
-                    ToggleLine(title: "Use their microphone too",
+                    ToggleLine(title: uiText("Use their microphone too"),
                                detail: s.autoSwitchMicrophone
-                                   ? "Off keeps the iPad microphone, and AirPods keep full sound quality"
-                                   : "Output only: the microphone stays on the iPad",
+                                   ? uiText("Off keeps the iPad microphone, and AirPods keep full sound quality")
+                                   : uiText("Output only: the microphone stays on the iPad"),
                                isOn: Binding(get: { s.autoSwitchMicrophone },
                                              set: { model.snapshot.autoSwitchMicrophone = $0; model.actions.setAutoSwitchMicrophone($0) }))
                 }
             }
-            LinkRow(title: "Sound Settings…", symbol: "arrow.up.forward.app", action: model.actions.openSoundSettings)
+            LinkRow(title: uiText("Sound Settings…"), symbol: "arrow.up.forward.app", action: model.actions.openSoundSettings)
         }
     }
 
@@ -344,17 +344,17 @@ struct StatusPanelView: View {
         VStack(spacing: 8) {
             if let code = s.connectionCode {
                 Card {
-                    Text("Connection code").font(.system(size: 11, weight: .semibold))
+                    Text(uiText("Connection code")).font(.system(size: 11, weight: .semibold))
                     Text(code).font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
-                    Text("Matches the code on the iPad: this session is encrypted end to end.")
+                    Text(uiText("Matches the code on the iPad: this session is encrypted end to end."))
                         .font(.system(size: 11)).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Card {
-                Text("Paired iPads").font(.system(size: 11, weight: .semibold))
+                Text(uiText("Paired iPads")).font(.system(size: 11, weight: .semibold))
                 if s.paired.isEmpty {
-                    Text("尚未配對。請在 iPad 與 Mac 上核對首次連線的配對碼。")
+                    Text(uiText("No iPads paired. Compare the codes on the iPad and Mac when you first connect."))
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                 } else {
                     ForEach(s.paired) { peer in
@@ -363,7 +363,7 @@ struct StatusPanelView: View {
                 }
                 CardDivider()
                 Button(role: .destructive, action: model.actions.forgetPaired) {
-                    Label("Forget Paired iPads…", systemImage: "trash")
+                    Label(uiText("Forget Paired iPads…"), systemImage: "trash")
                         .font(.system(size: 12))
                 }
                 .buttonStyle(.bordered)
@@ -377,32 +377,32 @@ struct StatusPanelView: View {
         VStack(spacing: 8) {
             Card {
                 if PortableSetup.receiverURL != nil {
-                    LinkRow(title: "iPad 接收器下載碼", symbol: "qrcode", action: { PortableSetup.showReceiverDownload() })
+                    LinkRow(title: uiText("iPad receiver download code"), symbol: "qrcode", action: { PortableSetup.showReceiverDownload() })
                     CardDivider()
                 }
-                Text("Permissions").font(.system(size: 11, weight: .semibold))
-                PermissionLine(name: "Screen Recording", purpose: "Shows the Mac screen on the iPad",
+                Text(uiText("Permissions")).font(.system(size: 11, weight: .semibold))
+                PermissionLine(name: uiText("Screen Recording"), purpose: uiText("Shows the Mac screen on the iPad"),
                                granted: s.screenRecording, action: model.actions.openScreenRecording)
                 CardDivider()
-                PermissionLine(name: "鍵盤與指標控制", purpose: "接收已配對 iPad 的輸入操作",
+                PermissionLine(name: uiText("Keyboard and pointer control"), purpose: uiText("Receives input from your paired iPad"),
                                granted: s.accessibility, action: model.actions.openAccessibility)
             }
             Card {
-                ToggleLine(title: "Keep the display on",
-                           detail: s.keepDisplayAwake ? "The Mac's displays stay on while the iPad is connected"
-                               : "The displays may sleep; a touch, click or key on the iPad or the Mac wakes them",
+                ToggleLine(title: uiText("Keep the display on"),
+                           detail: s.keepDisplayAwake ? uiText("The Mac's displays stay on while the iPad is connected")
+                               : uiText("The displays may sleep; a touch, click or key on the iPad or the Mac wakes them"),
                            isOn: Binding(get: { s.keepDisplayAwake },
                                          set: { model.snapshot.keepDisplayAwake = $0; model.actions.setKeepDisplayAwake($0) }))
                 CardDivider()
-                ToggleLine(title: "Keep the Mac awake",
-                           detail: s.keepMacAwake ? "The Mac does not sleep on its own while the iPad is connected, so the iPad can always wake it. Sleep from the Apple menu still works."
-                               : "The Mac follows its own sleep setting. Once asleep, only its own keyboard or mouse wakes it.",
+                ToggleLine(title: uiText("Keep the Mac awake"),
+                           detail: s.keepMacAwake ? uiText("The Mac does not sleep on its own while the iPad is connected, so the iPad can always wake it. Sleep from the Apple menu still works.")
+                               : uiText("The Mac follows its own sleep setting. Once asleep, only its own keyboard or mouse wakes it."),
                            isOn: Binding(get: { s.keepMacAwake },
                                          set: { model.snapshot.keepMacAwake = $0; model.actions.setKeepMacAwake($0) }))
             }
             Card {
-                ToggleLine(title: "Open at Login",
-                           detail: s.loginNeedsApproval ? "Approve WiredDisplay in Login Items" : "The iPad shows the Mac right after a restart",
+                ToggleLine(title: uiText("Open at Login"),
+                           detail: s.loginNeedsApproval ? uiText("Approve AutoSidecar Companion in Login Items") : uiText("The iPad shows the Mac right after a restart"),
                            isOn: Binding(get: { s.openAtLogin },
                                          set: { model.snapshot.openAtLogin = $0; model.actions.setOpenAtLogin($0) }))
             }
@@ -463,7 +463,7 @@ private struct StatusLine: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 8)
-            Text(on ? "On" : "Off")
+            Text(on ? uiText("On") : uiText("Off"))
                 .font(.system(size: 11, weight: .semibold))
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .foregroundStyle(on ? Color.green : .secondary)
@@ -513,7 +513,7 @@ private struct PermissionLine: View {
             }
             Spacer(minLength: 8)
             if !granted {
-                Button("Grant…", action: action).controlSize(.small).buttonStyle(.bordered)
+                Button(uiText("Grant…"), action: action).controlSize(.small).buttonStyle(.bordered)
             }
         }
     }
@@ -602,10 +602,10 @@ extension QualityPreset {
     var shortTitle: String { title.components(separatedBy: " — ").first ?? title }
     var formatTitle: String {
         switch self {
-        case .balanced: return "Hybrid · 10-bit"
-        case .pro: return "4:2:0 · 10-bit"
-        case .ultra: return "4:4:4 · 10-bit"
-        case .highColor: return "4:4:4 · 8-bit"
+        case .balanced: return uiText("Hybrid · 10-bit")
+        case .pro: return uiText("4:2:0 · 10-bit")
+        case .ultra: return uiText("4:4:4 · 10-bit")
+        case .highColor: return uiText("4:4:4 · 8-bit")
         }
     }
 }
@@ -656,7 +656,7 @@ private struct KitSwitch: View {
             })
         .accessibilityElement()
         .accessibilityAddTraits(.isToggle)
-        .accessibilityValue(isOn ? "On" : "Off")
+        .accessibilityValue(isOn ? uiText("On") : uiText("Off"))
         .accessibilityAction { isOn.toggle() }
     }
 

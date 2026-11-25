@@ -2,6 +2,8 @@
 
 [繁體中文](README.md) · English
 
+The Mac app and iPad receiver support Traditional Chinese and English and follow the language setting on each device.
+
 **Turn your iPad into a wired extended display for your Mac. A single USB-C data cable carries the desktop and audio.**
 
 - **Mac audio through your iPad.** Streams uncompressed 48 kHz stereo PCM over USB. Listen through the iPad speakers or your selected headphones, and adjust volume in macOS.

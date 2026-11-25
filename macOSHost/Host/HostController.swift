@@ -1152,7 +1152,7 @@ final class HostController: @unchecked Sendable {
         let captureID = CGDisplayPrimaryDisplay(displayID)
         guard captureID == displayID else {
             pipeline.display.destroy()
-            throw SessionError.incompatible("無法將 iPad 設為獨立的延伸螢幕。")
+            throw SessionError.incompatible(uiText("Could not use the iPad as a separate extended display."))
         }
         currentDisplay.withLock { $0 = displayID }
         let source = CGDisplayBounds(captureID)

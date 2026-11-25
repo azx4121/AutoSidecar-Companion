@@ -215,7 +215,7 @@ final class ClientAudio {
             ClientLog.write("audio failed (speaker \(speaker), microphone \(microphone)): \(error)")
             if microphone && speaker {
                 apply(speaker: true, microphone: false)
-                if speakerOn { onError?("iPad 麥克風無法啟動。Mac 音訊會繼續播放。") }
+                if speakerOn { onError?(uiText("The iPad microphone could not start. Mac audio will continue playing.")) }
             } else {
                 fail(error.localizedDescription)
             }
@@ -247,7 +247,7 @@ final class ClientAudio {
         teardown()
         speakerOn = false
         microphoneOn = false
-        onError?("Audio: \(reason)")
+        onError?(uiText("Audio: %@", reason))
         onStateChange?(false, false)
     }
 

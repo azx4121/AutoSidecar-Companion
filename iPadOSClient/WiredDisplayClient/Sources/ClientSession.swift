@@ -225,7 +225,7 @@ final class ClientSession: @unchecked Sendable {
                 let payload = SessionCodec.encode(.panelSize(width: next.pixelWidth, height: next.pixelHeight))
                 send(stream: .control, payload: payload, on: connection)
             } else {
-                endConnection(reason: "iPad 顯示能力更新，正在重新協商", sendBye: true)
+                endConnection(reason: "iPad display capabilities changed; renegotiating", sendBye: true)
             }
         }
     }
@@ -392,7 +392,7 @@ final class ClientSession: @unchecked Sendable {
             self.updateWirelessResults(results)
         }
         browser = created
-        ui { $0.wirelessStatus = "正在搜尋同一個 Wi-Fi 網路上的 Mac…" }
+        ui { $0.wirelessStatus = uiText("Searching for Macs on the same Wi-Fi network…") }
         created.start(queue: queue)
     }
 
@@ -414,13 +414,13 @@ final class ClientSession: @unchecked Sendable {
         switch state {
         case .ready:
             let waiting = wirelessPreference?.name
-            ui { $0.wirelessStatus = waiting.map { "等待已配對的 Mac：\($0)" } ?? "選擇同一個 Wi-Fi 網路上的 Mac。" }
+            ui { $0.wirelessStatus = waiting.map { uiText("Waiting for paired Mac: %@", $0) } ?? uiText("Choose a Mac on the same Wi-Fi network.") }
             scheduleWirelessReconnect()
         case .waiting:
-            ui { $0.wirelessStatus = "請確認 Wi-Fi 已連線，且已允許此 App 取用區域網路。" }
+            ui { $0.wirelessStatus = uiText("Check your Wi-Fi connection and allow local network access for this app.") }
         case .failed(let error):
             stopWirelessDiscovery()
-            ui { $0.wirelessStatus = "無法搜尋 Mac：\(error)。請在控制面板重新啟用 Wi-Fi。" }
+            ui { $0.wirelessStatus = uiText("Could not find Macs: %@. Turn Wi-Fi off and on in the session controls.", String(describing: error)) }
         default:
             break
         }
@@ -528,7 +528,7 @@ final class ClientSession: @unchecked Sendable {
             listener = created
             created.start(queue: queue)
         } catch {
-            ui { $0.phase = .failed("listener: \(error)") }
+            ui { $0.phase = .failed(uiText("Could not start listening: %@", error.localizedDescription)) }
         }
     }
 
@@ -541,7 +541,7 @@ final class ClientSession: @unchecked Sendable {
         case .failed(let error):
             listener = nil
             source.cancel()
-            if connection == nil, !wirelessEnabled { ui { $0.phase = .failed("listener: \(error)") } }
+            if connection == nil, !wirelessEnabled { ui { $0.phase = .failed(uiText("Could not start listening: %@", error.localizedDescription)) } }
             // Retry while the app is in front.
             queue.asyncAfter(deadline: .now() + 2) { [weak self] in
                 guard let self, self.running, self.listener == nil else { return }
@@ -564,7 +564,7 @@ final class ClientSession: @unchecked Sendable {
             channel = SecureChannel(role: .client, identity: try trust.identity())
         } catch {
             ClientLog.write("identity unavailable: \(error)")
-            ui { $0.lastError = "Keychain: \(error)" }
+            ui { $0.lastError = uiText("Keychain: %@", String(describing: error)) }
             return incoming.cancel()
         }
         connection = incoming
@@ -720,7 +720,7 @@ final class ClientSession: @unchecked Sendable {
     private func verified(_ peer: SecureChannel.Peer, on current: NWConnection) {
         if let pin = wirelessAttempt?.pinnedIdentity, pin != peer.identityKey {
             blockAutomaticReconnect = true
-            return endConnection(reason: "已配對 Mac 的身分已變更。請手動選擇並核對配對碼。", sendBye: false)
+            return endConnection(reason: "The paired Mac’s identity changed. Select it and compare the pairing codes again.", sendBye: false)
         }
         // Both ends can take time to compare the code, even when this iPad has
         // already paired and the Mac has since forgotten its copy.

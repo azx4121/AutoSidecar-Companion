@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "AutoSidecar 副螢幕";
+"NSLocalNetworkUsageDescription" = "搜尋並連線到同一個 Wi-Fi 網路上的已配對 Mac。";
+"NSMicrophoneUsageDescription" = "開啟 iPad 麥克風時，將收音傳送到已配對的 Mac。";

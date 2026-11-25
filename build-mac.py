@@ -65,6 +65,7 @@ def build_payload(temp, source, architectures, identity, receiver_url):
         if sorted(found) != sorted(architectures):
             raise RuntimeError(f"{target.name}: 預期架構 {architectures}，實際為 {found}")
     shutil.copyfile(source / "macOSHost/Resources/AppIcon.icns", resources / "AppIcon.icns")
+    shutil.copytree(source / "macOSHost/Resources/zh-Hant.lproj", resources / "zh-Hant.lproj")
     shutil.copyfile(source / "LICENSE", resources / "WiredDisplay-LICENSE.txt")
     (resources / "Credits.txt").write_text(
         "AutoSidecar Companion incorporates WiredDisplay.\nhttps://github.com/sibawono/WiredDisplay\n"
@@ -75,7 +76,8 @@ def build_payload(temp, source, architectures, identity, receiver_url):
         "CFBundlePackageType": "APPL", "CFBundleIconFile": "AppIcon.icns",
         "CFBundleShortVersionString": VERSION, "CFBundleVersion": "2",
         "LSMinimumSystemVersion": "14.0", "LSUIElement": True, "NSHighResolutionCapable": True,
-        "NSMicrophoneUsageDescription": "讀取「iPad Speaker」虛擬音訊裝置，將 Mac 聲音傳到已配對的 iPad。"
+        "CFBundleDevelopmentRegion": "en",
+        "NSMicrophoneUsageDescription": "Reads the iPad Speaker virtual audio device to play Mac audio on your paired iPad."
     }
     if receiver_url:
         app_info["AutoSidecarReceiverURL"] = receiver_url

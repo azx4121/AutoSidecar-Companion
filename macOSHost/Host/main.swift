@@ -40,7 +40,7 @@ final class StatusMenu: NSObject {
     func attach(_ fleet: HostFleet) {
         self.fleet = fleet
         item.button?.image = MenuBarGlyph.image(streaming: false)
-        item.button?.toolTip = "WiredDisplay"
+        item.button?.toolTip = "AutoSidecar Companion"
         item.button?.target = self
         item.button?.action = #selector(togglePanel)
         model.actions = makeActions(fleet)
@@ -210,21 +210,22 @@ final class StatusMenu: NSObject {
         var s = PanelSnapshot()
         switch state {
         case .streaming:
-            let transport = controller.isLAN ? " over LAN" : ""
-            (s.stateText, s.stateColor) = ("Streaming to \(status.iPadName ?? "iPad")\(transport)", .green)
+            let text = controller.isLAN ? "Streaming to %@ over LAN" : "Streaming to %@"
+            (s.stateText, s.stateColor) = (uiText(text, status.iPadName ?? "iPad"), .green)
         case .waitingForDevice:
-            (s.stateText, s.stateColor) = (controller.isLAN ? "Waiting for the iPad over LAN" : "Waiting for the iPad on USB", .orange)
-        case .waitingForUSBDetach: (s.stateText, s.stateColor) = ("LAN paused for USB priority", .orange)
-        case .connecting: (s.stateText, s.stateColor) = ("Connecting…", .orange)
-        case .pairing(let code): (s.stateText, s.stateColor) = ("Pairing: confirm code \(code)", .blue)
-        case .audioOnly(let device): (s.stateText, s.stateColor) = ("Audio only: \(device)", .teal)
-        case .backingOff(let reason): (s.stateText, s.stateColor) = ("Retrying: \(reason.prefix(50))", .red)
-        case .stopped: (s.stateText, s.stateColor) = ("Stopped", .gray)
+            (s.stateText, s.stateColor) = (controller.isLAN ? uiText("Waiting for the iPad over LAN") : uiText("Waiting for the iPad on USB"), .orange)
+        case .waitingForUSBDetach: (s.stateText, s.stateColor) = (uiText("LAN paused for USB priority"), .orange)
+        case .connecting: (s.stateText, s.stateColor) = (uiText("Connecting…"), .orange)
+        case .pairing(let code): (s.stateText, s.stateColor) = (uiText("Pairing: confirm code %@", code), .blue)
+        case .audioOnly(let device): (s.stateText, s.stateColor) = (uiText("Audio only: %@", device), .teal)
+        case .backingOff(let reason): (s.stateText, s.stateColor) = (uiText("Retrying: %@", String(uiText(reason).prefix(50))), .red)
+        case .stopped: (s.stateText, s.stateColor) = (uiText("Stopped"), .gray)
         }
         if let since = status.streamingSince {
             let minutes = Int(Date().timeIntervalSince(since) / 60)
-            s.connectedFor = minutes < 1 ? "Connected just now"
-                : "Connected for " + (minutes >= 60 ? "\(minutes / 60) h \(minutes % 60) min" : "\(minutes) min")
+            s.connectedFor = minutes < 1 ? uiText("Connected just now")
+                : minutes >= 60 ? uiText("Connected for %@ h %@ min", (minutes / 60).formatted(), (minutes % 60).formatted())
+                    : uiText("Connected for %@ min", minutes.formatted())
         }
         s.looksLike = status.pointSize
         s.displaySpace = status.displaySpace
@@ -233,7 +234,7 @@ final class StatusMenu: NSObject {
         s.pixels = [status.pixelSize.map { "\($0) px" }, status.refreshHz.map { "\($0) Hz" }]
             .compactMap { $0 }.joined(separator: " · ")
         if let codec = status.codec, let encoding = status.encoding { s.encoding = "\(codec) · \(encoding)" }
-        s.limitNote = controller.decodeLimitNote.map { "Limited for this iPad: \($0)" }
+        s.limitNote = controller.decodeLimitNote.map { uiText("Limited for this iPad: %@", $0) }
         s.brightness = controller.brightness
         s.quality = controller.qualityPreset
         s.inputEnabled = controller.isInputEnabled
@@ -299,10 +300,10 @@ final class StatusMenu: NSObject {
     private func forgetPaired() {
         popover.performClose()
         let alert = NSAlert()
-        alert.messageText = "Forget all paired iPads?"
-        alert.informativeText = "下次連線時需要重新核對配對碼。目前的連線會持續到中斷為止。"
-        alert.addButton(withTitle: "Forget")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = uiText("Forget all paired iPads?")
+        alert.informativeText = uiText("Pairing will be required the next time you connect. The current session stays active until disconnected.")
+        alert.addButton(withTitle: uiText("Forget"))
+        alert.addButton(withTitle: uiText("Cancel"))
         NSApp.activate(ignoringOtherApps: true)
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         controller?.trust.forgetAllPeers()
@@ -317,10 +318,10 @@ final class StatusMenu: NSObject {
         DispatchQueue.main.sync {
             guard stillAvailable?() ?? true else { return false }
             let alert = NSAlert()
-            alert.messageText = "與這部 iPad 配對？"
-            alert.informativeText = "請核對 iPad 接收器顯示的配對碼。兩端一致時，在 Mac 和 iPad 上確認。\n\n\(peer.pairingCode)"
-            alert.addButton(withTitle: "配對")
-            alert.addButton(withTitle: "取消")
+            alert.messageText = uiText("Pair with this iPad?")
+            alert.informativeText = uiText("Compare the code shown in the iPad receiver. If the codes match, confirm on both devices.\n\n%@", peer.pairingCode)
+            alert.addButton(withTitle: uiText("Pair"))
+            alert.addButton(withTitle: uiText("Cancel"))
             NSApp.activate(ignoringOtherApps: true)
             let deadline = Date().addingTimeInterval(120)
             let timer = Timer(timeInterval: stillAvailable == nil ? 120 : 0.25, repeats: stillAvailable != nil) { _ in
@@ -353,9 +354,9 @@ final class StatusMenu: NSObject {
 @MainActor
 func renderPanelPreviews(to directory: String) {
     var sample = PanelSnapshot()
-    sample.stateText = "Streaming to iPad"
+    sample.stateText = uiText("Streaming to %@", "iPad")
     sample.stateColor = .green
-    sample.connectedFor = "Connected for 12 min"
+    sample.connectedFor = uiText("Connected for %@ min", "12")
     sample.looksLike = "1366 × 1024"
     sample.displaySpace = .native
     sample.canChangeDisplaySpace = true
@@ -397,9 +398,9 @@ func renderPanelPreviews(to directory: String) {
 @MainActor
 func renderPanelLive(to directory: String) async {
     var sample = PanelSnapshot()
-    sample.stateText = "Streaming to iPad"
+    sample.stateText = uiText("Streaming to %@", "iPad")
     sample.stateColor = .green
-    sample.connectedFor = "Connected for 12 min"
+    sample.connectedFor = uiText("Connected for %@ min", "12")
     sample.looksLike = "1536 × 1152"
     sample.displaySpace = .more
     sample.canChangeDisplaySpace = true

@@ -2,6 +2,8 @@
 
 繁體中文 · [English](README.en.md)
 
+Mac 主程式與 iPad 接收器皆支援繁體中文與英文，並依各自的系統語言顯示。
+
 **用一條 USB-C 資料線，把 iPad 變成 Mac 的有線延伸螢幕，畫面和聲音一起傳。**
 
 - **Mac 音效從 iPad 播放**。透過 USB 傳送 48 kHz 雙聲道無壓縮 PCM，從 iPad 喇叭或所選的耳機播放，音量可在 macOS 調整。
@@ -36,7 +38,7 @@
 
 *範例桌面重現 Mac mini 原型的兩個按鈕與位置。*
 
-**公開版 Companion** 從 Mac 選單列的 **Display → Match the iPad’s refresh rate** 調整。開啟時依 iPad 協商更新率，關閉時把 Companion 串流上限設為 60 Hz。
+**公開版 Companion** 從 Mac 選單列的 **顯示 → 配合 iPad 更新率** 調整。開啟時依 iPad 協商更新率，關閉時把 Companion 串流上限設為 60 Hz。
 
 ## 系統需求
 
@@ -61,7 +63,7 @@ Mac 建置預設包含 Apple 晶片與 Intel 架構，僅需 Apple 晶片時可�
 2. **iPad**。用 Xcode 開啟 [WiredDisplayClient.xcodeproj](iPadOSClient/WiredDisplayClient/WiredDisplayClient.xcodeproj)，選 `WiredDisplayClient` scheme。在 **Signing & Capabilities** 選自己的開發團隊，並使用團隊可用的 Bundle Identifier。用 USB-C 資料線接 iPad，解鎖並依提示信任這部 Mac。選 iPad 為執行目的地，再按 Run。若系統提示，依 Apple 的說明啟用「開發者模式」。[Xcode 裝置執行](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices) · [開發者模式](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) · [信任這部電腦](https://support.apple.com/zh-tw/109054)
 3. **首次配對**。讓 Mac 已登入、iPad 接收器在前景。核對兩端顯示的配對碼，相同才在 Mac 和 iPad 各自確認。
 4. **提供所需權限**。在 Mac 的「系統設定 → 隱私權與安全性」允許螢幕錄製。要在 iPad 播放 Mac 聲音時，也要允許 Mac App 使用「麥克風」權限讀取虛擬音訊裝置。若要測試 iPad 輸入功能，請勾選允許輸入並核准「輔助使用」。依系統提示重新開啟 App。iPad 麥克風預設關閉。[Apple 螢幕錄製](https://support.apple.com/zh-tw/guide/mac-help/mchld6aa7d23/mac) · [Apple 麥克風權限](https://support.apple.com/zh-tw/guide/mac-help/mchla1b1e1fe/mac)
-5. **日常使用**。在 Mac 登入後，維持 iPad 接收器在前景再插線，已配對的裝置會嘗試重連。若 iPad 的接收器已關閉，先解鎖並開啟 App。要播放 Mac 聲音，在接收器啟用「Mac audio on this iPad」，並從 Mac 的「聲音」設定調整「iPad Speaker」音量。配對和串流從 macOS 使用者登入後開始。
+5. **日常使用**。在 Mac 登入後，維持 iPad 接收器在前景再插線，已配對的裝置會嘗試重連。若 iPad 的接收器已關閉，先解鎖並開啟 App。要播放 Mac 聲音，在接收器啟用「在這部 iPad 播放 Mac 音訊」，並從 Mac 的「聲音」設定調整「iPad Speaker」音量。配對和串流從 macOS 使用者登入後開始。
 
 ## 畫面、聲音與連線
 

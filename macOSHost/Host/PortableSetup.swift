@@ -41,7 +41,7 @@ enum PortableSetup {
     @MainActor
     private static func codeView(_ image: NSImage) -> NSImageView {
         let view = NSImageView(image: image)
-        view.setAccessibilityLabel("iPad 接收器下載碼")
+        view.setAccessibilityLabel(uiText("iPad receiver download code"))
         return view
     }
 
@@ -49,10 +49,10 @@ enum PortableSetup {
     static func showReceiverDownload() {
         guard let url = receiverURL, let image = receiverCode(url) else { return }
         let alert = NSAlert()
-        alert.messageText = "下載 iPad 接收器"
-        alert.informativeText = "用 iPad 相機掃描下載碼。安裝後開啟接收器，將 iPad 以 USB-C 資料線接上這台 Mac。"
+        alert.messageText = uiText("Download the iPad receiver")
+        alert.informativeText = uiText("Scan the code with the iPad camera. Install and open the receiver, then connect the iPad to this Mac with a USB-C data cable.")
         alert.accessoryView = codeView(image)
-        alert.addButton(withTitle: "完成")
+        alert.addButton(withTitle: uiText("Done"))
         alert.runModal()
     }
 
@@ -102,9 +102,9 @@ enum PortableSetup {
         app.setActivationPolicy(.accessory)
         if legacyControllerIsRunning() {
             let alert = NSAlert()
-            alert.messageText = "這台 Mac 已由 AutoSidecar 管理"
-            alert.informativeText = "目前的控制器正在管理 iPad。請繼續使用原有的 AutoSidecar。要設定另一台 Mac，請在那台 Mac 開啟 AutoSidecar Companion。"
-            alert.addButton(withTitle: "結束 Companion")
+            alert.messageText = uiText("This Mac is already managed by AutoSidecar")
+            alert.informativeText = uiText("The existing AutoSidecar controller is managing the iPad. To set up a different Mac, open AutoSidecar Companion on that Mac.")
+            alert.addButton(withTitle: uiText("Quit Companion"))
             app.activate(ignoringOtherApps: true)
             alert.runModal()
             return false
@@ -112,19 +112,15 @@ enum PortableSetup {
         let key = "didPresentPortableSetup"
         guard !UserDefaults.standard.bool(forKey: key) else { return true }
         let alert = NSAlert()
-        alert.messageText = "將 iPad 連到這台 Mac"
+        alert.messageText = uiText("Connect your iPad to this Mac")
         let code = receiverURL.flatMap(receiverCode)
         let installation = code == nil
-            ? "請在 iPad 開啟已安裝的 AutoSidecar 接收器。若尚未安裝，請先向此版本的提供者取得接收器。"
-            : "請用 iPad 相機掃描下方的下載碼，安裝並開啟接收器。已安裝者直接開啟接收器即可。"
-        alert.informativeText = """
-        \(installation)
-
-        用 USB-C 資料線接上並解鎖 iPad。若出現「信任這部電腦」，請確認。接著比對兩端的配對碼並在兩端同意。
-
-        Mac 需要「螢幕錄製」權限來傳送桌面。「麥克風」權限供虛擬音訊裝置傳送 Mac 聲音。系統若要求重新開啟 App，請依提示操作。
-        """
-        let input = NSButton(checkboxWithTitle: "允許使用 iPad 的輸入裝置控制 Mac（需系統授權）", target: nil, action: nil)
+            ? uiText("Open the AutoSidecar receiver on your iPad. If you need to install it, contact the provider of this build.")
+            : uiText("Scan the code below with the iPad camera, then install and open the receiver. If already installed, open the receiver.")
+        let pairing = uiText("Connect and unlock your iPad with a USB-C data cable. If prompted, trust this Mac. Compare the pairing codes and confirm on both devices.")
+        let permissions = uiText("Allow Screen Recording to share the Mac desktop and Microphone access to read the virtual audio device. Reopen the app if macOS asks.")
+        alert.informativeText = [installation, pairing, permissions].joined(separator: "\n\n")
+        let input = NSButton(checkboxWithTitle: uiText("Let the iPad control this Mac (requires system permission)"), target: nil, action: nil)
         input.state = .off
         input.sizeToFit()
         if let code {
@@ -136,12 +132,19 @@ enum PortableSetup {
         } else {
             alert.accessoryView = input
         }
-        alert.addButton(withTitle: "開始設定")
-        alert.addButton(withTitle: "稍後")
+        alert.addButton(withTitle: uiText("Start Setup"))
+        alert.addButton(withTitle: uiText("Later"))
         app.activate(ignoringOtherApps: true)
         guard alert.runModal() == .alertFirstButtonReturn else { return false }
         UserDefaults.standard.set(input.state == .on, forKey: HostController.allowInputKey)
         UserDefaults.standard.set(true, forKey: key)
         return true
     }
+}
+
+// SwiftUI and AppKit share the same bundle translations. Device names and
+// technical details remain arguments, so they are never read as format strings.
+func uiText(_ key: String, _ arguments: CVarArg...) -> String {
+    let localized = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
+    return arguments.isEmpty ? localized : String(format: localized, locale: .current, arguments: arguments)
 }
