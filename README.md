@@ -1,8 +1,15 @@
 # AutoSidecar Companion 0.2.0
 
+繁體中文 · [English](README.en.md)
+
 用一條 USB-C 資料線把 iPad 當成 Mac 的 Retina 副螢幕。Mac 選單列面板管理連線、畫面、聲音和輸入。同一個 iPad 接收器可接收畫面及 Mac 聲音，也可在取得權限後用觸控、鍵盤或觸控板操作 Mac。
 
-這是可自行建置的開發預覽原始碼。目前提供 Mac 與 iPad 的建置流程。一般使用者的公證 Mac 安裝包、App Store 與 TestFlight 發行仍待完成。
+## 下載
+
+- [下載 v0.2.0 原始碼 ZIP](https://github.com/azx4121/AutoSidecar-Companion/archive/8bdf8d1063cd8b1ec34bcd69a8e3753b06159ebf.zip)
+- [下載最新原始碼 ZIP（含雙語說明）](https://github.com/azx4121/AutoSidecar-Companion/archive/refs/heads/main.zip)
+
+目前提供可自行建置的開發預覽。使用下方步驟在 Mac 建置安裝包，並用 Xcode 將接收器裝到 iPad。公證 Mac 安裝包、App Store 與 TestFlight 發行仍待完成。
 
 ## 系統需求
 
